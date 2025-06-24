@@ -1,8 +1,16 @@
 package com.example.oryon.ui.screens.home
 
 import android.content.Intent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,10 +20,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.oryon.R
 import com.example.oryon.data.location.LocationTrackingService
@@ -25,17 +36,57 @@ import com.mapbox.maps.dsl.cameraOptions
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
+import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
 import com.mapbox.maps.extension.compose.annotation.rememberIconImage
 import com.mapbox.maps.extension.compose.style.MapStyle
+
 
 
 
 @Composable
 fun HomeScreen( viewModel: HomeViewModel ) {
 
+
+    /* Debugging
+
+    if (liveLocation != null) {
+                Text("Live-Position: ${liveLocation!!.latitude}, ${liveLocation!!.longitude}")
+            }
+
+            Button(onClick = {
+                if (isTracking) {
+                    viewModel.stopTracking()
+                    context.stopService(Intent(context, LocationTrackingService::class.java))
+                } else {
+                    ContextCompat.startForegroundService(
+                        context,
+                        Intent(context, LocationTrackingService::class.java)
+                    )
+                    viewModel.startTracking()
+                }
+                isTracking = !isTracking
+            }) {
+                Text(if (isTracking) "Stop Tracking" else "Start Tracking")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (currentLocation != null) {
+                Text("Aktuelle Position: ${currentLocation!!.latitude}, ${currentLocation!!.longitude}")
+                Text("Distanz: ${"%.2f".format(distance / 1000)} km")
+                Text("Punkte: ${route.size}")
+            } else {
+                Text("Warte auf Standortdaten...")
+            }
+
+
+     */
+
+
     val context = LocalContext.current
     var hasPermission by remember { mutableStateOf(false) }
 
+    // Location permissions (fehlt hier, bitte dein LocationPermissionHandler einbinden)
     LocationPermissionHandler {
         hasPermission = true
     }
@@ -47,32 +98,17 @@ fun HomeScreen( viewModel: HomeViewModel ) {
         }
     }
 
-    val location by viewModel.location.collectAsState()
-
-    /*
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        if (!hasPermission) {
-            Text("Warte auf Standortberechtigung...")
-        } else if (location == null) {
-            Text("Standort wird abgerufen...")
-        } else {
-            Text("Latitude: ${location!!.latitude}")
-            Text("Longitude: ${location!!.longitude}")
-            Text("Speed: ${location!!.speed} m/s")
-            Text("Genauigkeit: ±${location!!.accuracy} m")
-        }
-    }
-    */
-
+    // States aus ViewModel
+    val location by viewModel.currentLocation.collectAsState()
+    val routePoints by viewModel.routePoints.collectAsState()
+    val distance by viewModel.distanceMeters.collectAsState()
+    val elapsedTime by viewModel.elapsedTimeSeconds.collectAsState()
+    val pace by viewModel.paceMinutesPerKm.collectAsState(initial = null)
+    val isTracking by viewModel.isTracking.collectAsState(initial = false)
+    val isPaused by viewModel.isPaused.collectAsState(initial = false)
 
     val viewportState = rememberMapViewportState()
-
-    val markerIcon = rememberIconImage(
-        key = "marker",
-        painter = painterResource(R.drawable.location)
-    )
+    val markerIcon = rememberIconImage(key = "marker", painter = painterResource(R.drawable.location))
 
     LaunchedEffect(location) {
         if (hasPermission && location != null) {
@@ -85,19 +121,73 @@ fun HomeScreen( viewModel: HomeViewModel ) {
         }
     }
 
+    Column(modifier = Modifier.fillMaxSize()) {
 
-    MapboxMap(
-        modifier = Modifier.fillMaxSize(),
-        mapViewportState = viewportState,
-        style = { MapStyle(style = Style.DARK) },
-    ) {
-        if (hasPermission && location != null) {
-            PointAnnotation(point = Point.fromLngLat(location!!.longitude, location!!.latitude)) {
-                iconImage = markerIcon
-                iconSize = 2.0
+        if (isTracking) {
+            Column {
+                Text("%.2f km".format(distance / 1000), modifier = Modifier.size(24.dp))
+                Row {
+                    Text("%02d:%02d min".format(elapsedTime / 60, elapsedTime % 60))
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text("${pace?.let { "%.2f min/km".format(it) } ?: "--"} pace")
+                }
             }
         }
-    }
 
+        Box(modifier = Modifier.fillMaxSize()){
+            // Karte
+            MapboxMap(
+                modifier = Modifier.fillMaxSize(),
+                mapViewportState = viewportState,
+                style = { MapStyle(style = Style.DARK) }
+            ) {
+                // Nutzer-Position
+                if (location != null) {
+                    PointAnnotation(point = Point.fromLngLat(location!!.longitude, location!!.latitude)) {
+                        iconImage = markerIcon
+                        iconSize = 2.0
+                    }
+                }
+
+                // Route zeichnen
+                if (routePoints.size > 1) {
+                    PolylineAnnotation(
+                        points = routePoints.map { Point.fromLngLat(it.longitude, it.latitude) }
+                    ) {
+                        lineColor = Color(0xFFFF6F00)
+                        lineWidth = 5.0
+                    }
+                }
+            }
+
+            if (!isTracking) {
+                Button(
+                    onClick = { viewModel.startTracking() },
+                    modifier = Modifier.fillMaxWidth().padding(8.dp).align(Alignment.BottomEnd)
+                ) {
+                    Text("Start Tracking")
+                }
+            }
+
+            if (isTracking){
+                Row(modifier = Modifier.fillMaxWidth().padding(8.dp).align(Alignment.BottomEnd)) {
+                    if (!isPaused) {
+                        Button(
+                            onClick = { viewModel.pauseTracking() },
+                        ) { Text("Pause") }
+                    } else {
+                        Button(
+                            onClick = { viewModel.resumeTracking() },
+                        ) { Text("Weiter") }
+                    }
+
+                    Button(
+                        onClick = { viewModel.stopTracking() },
+                    ) { Text("Stop") }
+                }
+            }
+        }
+
+    }
 
 }

@@ -121,7 +121,8 @@ fun MainApp() {
             }
             composable(Screen.Home.route) {
                 val locationRepository = LocationRepositoryImpl()
-                val factory = HomeViewModelFactory(locationRepository)
+                val trackRunUseCase = TrackRunUseCase(locationRepository)
+                val factory = HomeViewModelFactory(locationRepository, trackRunUseCase)
                 val viewModel: HomeViewModel = viewModel(factory = factory)
                 HomeScreen(viewModel)
             }

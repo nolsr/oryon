@@ -12,60 +12,73 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-class HomeViewModel(private val locationRepository: LocationRepository): ViewModel() {
+class HomeViewModel(
+    private val locationRepository: LocationRepository,
+    private val trackRunUseCase: TrackRunUseCase
+): ViewModel() {
 
     private val _location = MutableStateFlow<Location?>(null)
     val location: StateFlow<Location?> = _location.asStateFlow()
 
+    private val _currentLocation = MutableStateFlow<Location?>(null)
+    val currentLocation: StateFlow<Location?> = _currentLocation.asStateFlow()
+
+    val elapsedTimeSeconds = trackRunUseCase.elapsedTimeSeconds
+    val distanceMeters = trackRunUseCase.distanceMeters
+    val paceMinutesPerKm = trackRunUseCase.paceMinutesPerKm
+    val routePoints = trackRunUseCase.routePoints
+
+    private val _isTracking = MutableStateFlow(false)
+    val isTracking: StateFlow<Boolean> = _isTracking
+
+    private val _isPaused = MutableStateFlow(false)
+    val isPaused: StateFlow<Boolean> = _isPaused
+
     init {
         viewModelScope.launch {
             locationRepository.getLocationUpdates()
-                .catch { it.printStackTrace() }
-                .collect { _location.value = it }
+                .firstOrNull()?.let {
+                    _currentLocation.value = it
+                }
         }
     }
 
-
-    /*
-    private val _currentLocation = MutableStateFlow<Location?>(null)
-    val currentLocation: StateFlow<Location?> = _currentLocation
-
-    private val _routePoints = MutableStateFlow<List<Location>>(emptyList())
-    val routePoints: StateFlow<List<Location>> = _routePoints
-
-    private val _distanceMeters = MutableStateFlow(0f)
-    val distanceMeters: StateFlow<Float> = _distanceMeters
-
-    private var trackingJob: Job? = null
-
     fun startTracking() {
-        trackingJob = trackRunUseCase.startTracking()
-            .onEach { location ->
-                _currentLocation.value = location
-                _routePoints.value = trackRunUseCase.routePoints.toList()
-                _distanceMeters.value = trackRunUseCase.getDistanceMeters()
-            }
-            .launchIn(viewModelScope)
+        if (_isTracking.value) return
+        _isTracking.value = true
+        _isPaused.value = false
+        trackRunUseCase.startTracking()
+    }
+
+    fun pauseTracking() {
+        _isPaused.value = true
+        trackRunUseCase.pauseTracking()
+    }
+
+    fun resumeTracking() {
+        _isPaused.value = false
+        trackRunUseCase.resumeTracking()
     }
 
     fun stopTracking() {
-        trackingJob?.cancel()
+        _isTracking.value = false
+        _isPaused.value = false
         trackRunUseCase.stopTracking()
-        _routePoints.value = emptyList()
-        _distanceMeters.value = 0f
-        _currentLocation.value = null
     }
-    */
+
+
 }
 
 class HomeViewModelFactory(
     private val locationRepository: LocationRepository,
+    private val trackRunUseCase: TrackRunUseCase
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return HomeViewModel(locationRepository) as T
+        return HomeViewModel(locationRepository, trackRunUseCase) as T
     }
 }
