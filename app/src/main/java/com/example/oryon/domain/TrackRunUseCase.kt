@@ -1,12 +1,14 @@
-package com.example.oryon.domain.location
+package com.example.oryon.domain
 
 import com.example.oryon.data.location.LocationRepository
 import android.location.Location
+import com.example.oryon.data.firebase.FirestoreRepository
+import com.example.oryon.data.health.HealthRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.*
 
 
-class TrackRunUseCase(private val locationRepository: LocationRepository) {
+class TrackRunUseCase(private val locationRepository: LocationRepository, private val firestoreRepository: FirestoreRepository) {
 
     private val _routePoints = MutableStateFlow<List<Location>>(emptyList())
     val routePoints: StateFlow<List<Location>> = _routePoints.asStateFlow()
@@ -21,8 +23,11 @@ class TrackRunUseCase(private val locationRepository: LocationRepository) {
     private var trackingJob: Job? = null
     private var timerJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default)
+    private var startTimeMillis: Long = 0L
+    private var endTimeMillis: Long = 0L
 
     fun startTracking(): Flow<Location> {
+        startTimeMillis = System.currentTimeMillis()
         startTimer()
         trackingJob = locationRepository.getLocationUpdates()
             .onEach { location ->
@@ -58,6 +63,16 @@ class TrackRunUseCase(private val locationRepository: LocationRepository) {
     }
 
     fun stopTracking() {
+        scope.launch {
+            try {
+               firestoreRepository.saveRunSession(
+                   distanceMeters = _distanceMeters.value,
+                   durationSec = _elapsedTimeSeconds.value,
+                   pace = if (_distanceMeters.value > 0) (_elapsedTimeSeconds.value / 60f) / (_distanceMeters.value / 1000f) else 0f
+               )
+            } catch (e: Exception) {}
+        }
+
         trackingJob?.cancel()
         timerJob?.cancel()
         _routePoints.value = emptyList()
@@ -65,10 +80,10 @@ class TrackRunUseCase(private val locationRepository: LocationRepository) {
         _elapsedTimeSeconds.value = 0
     }
 
-    private fun calculateDistance(route: List<Location>): Float {
+    private fun calculateDistance(points: List<Location>): Float {
         var distance = 0f
-        for (i in 1 until route.size) {
-            distance += route[i].distanceTo(route[i - 1])
+        for (i in 1 until points.size) {
+            distance += points[i].distanceTo(points[i - 1])
         }
         return distance
     }

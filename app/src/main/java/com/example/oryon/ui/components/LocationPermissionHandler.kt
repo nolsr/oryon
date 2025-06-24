@@ -1,4 +1,4 @@
-package com.example.oryon.ui.screens.home
+package com.example.oryon.ui.components
 
 import android.Manifest
 import android.os.Build

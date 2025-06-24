@@ -70,4 +70,6 @@ dependencies {
     implementation ("com.google.android.gms:play-services-location:21.0.1")
     implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
 
+    //implementation("androidx.health.connect:connect-client:1.1.0-rc02")
+
 }

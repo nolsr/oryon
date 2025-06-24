@@ -27,13 +27,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun OryonTopAppBar(
     authRepository: AuthRepository,
-    navController: NavController
+    navController: NavController,
+    text: String = "Oryon"
 ) {
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
 
     TopAppBar(
-        title = { Text("Oryon") },
+        title = { Text(text, style = MaterialTheme.typography.titleLarge) },
         actions = {
             Box {
                 IconButton(onClick = { expanded = true }) {

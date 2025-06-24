@@ -13,5 +13,7 @@ interface AuthRepository {
 
     suspend fun logout()
 
+    fun getUID(): String?
+
     fun hasUser(): Boolean
 }

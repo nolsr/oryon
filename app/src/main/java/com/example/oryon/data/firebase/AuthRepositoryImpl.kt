@@ -33,6 +33,10 @@ class AuthRepositoryImpl() : AuthRepository {
 
     }
 
+    override fun getUID(): String? {
+        return Firebase.auth.currentUser?.uid
+    }
+
     override suspend fun signUp(email: String, password: String): String {
         Firebase.auth.createUserWithEmailAndPassword(email, password).await()
         return Firebase.auth.currentUser?.uid

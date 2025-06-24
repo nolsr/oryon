@@ -1,4 +1,4 @@
-package com.example.oryon.data.firebase
+package com.example.oryon.data
 
 data class UserData(
     val id: String = "",

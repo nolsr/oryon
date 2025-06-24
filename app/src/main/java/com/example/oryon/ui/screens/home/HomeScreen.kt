@@ -1,13 +1,13 @@
 package com.example.oryon.ui.screens.home
 
 import android.content.Intent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -23,13 +23,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.oryon.R
 import com.example.oryon.data.location.LocationTrackingService
+import com.example.oryon.ui.components.LocationPermissionHandler
 import com.mapbox.geojson.Point
 import com.mapbox.maps.Style
 import com.mapbox.maps.dsl.cameraOptions
@@ -85,11 +85,17 @@ fun HomeScreen( viewModel: HomeViewModel ) {
 
     val context = LocalContext.current
     var hasPermission by remember { mutableStateOf(false) }
+    var healthPermissionGranted by remember { mutableStateOf(false) }
+
 
     // Location permissions (fehlt hier, bitte dein LocationPermissionHandler einbinden)
     LocationPermissionHandler {
         hasPermission = true
     }
+
+    //HealthPermissionHandler {
+    //    healthPermissionGranted = true
+    //}
 
     LaunchedEffect(hasPermission) {
         if (hasPermission) {
@@ -124,13 +130,20 @@ fun HomeScreen( viewModel: HomeViewModel ) {
     Column(modifier = Modifier.fillMaxSize()) {
 
         if (isTracking) {
-            Column {
-                Text("%.2f km".format(distance / 1000), modifier = Modifier.size(24.dp))
-                Row {
-                    Text("%02d:%02d min".format(elapsedTime / 60, elapsedTime % 60))
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text("${pace?.let { "%.2f min/km".format(it) } ?: "--"} pace")
-                }
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "%.2f km".format(distance / 1000),
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+                Text(
+                    text = "%02d:%02d min".format(elapsedTime / 60, elapsedTime % 60),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = pace?.let { "%.2f min/km".format(it) } ?: "--",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
 
@@ -170,19 +183,24 @@ fun HomeScreen( viewModel: HomeViewModel ) {
             }
 
             if (isTracking){
-                Row(modifier = Modifier.fillMaxWidth().padding(8.dp).align(Alignment.BottomEnd)) {
+                Row(modifier = Modifier.fillMaxWidth().padding(8.dp).align(Alignment.BottomEnd),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     if (!isPaused) {
                         Button(
                             onClick = { viewModel.pauseTracking() },
+                            modifier = Modifier.weight(1f)
                         ) { Text("Pause") }
                     } else {
                         Button(
                             onClick = { viewModel.resumeTracking() },
+                            modifier = Modifier.weight(1f)
                         ) { Text("Weiter") }
                     }
 
                     Button(
                         onClick = { viewModel.stopTracking() },
+                        modifier = Modifier.weight(1f)
                     ) { Text("Stop") }
                 }
             }

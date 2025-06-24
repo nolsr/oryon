@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.oryon.data.firebase.AuthRepository
 import com.example.oryon.data.firebase.FirestoreRepository
-import com.example.oryon.data.firebase.UserData
+import com.example.oryon.data.UserData
 import kotlinx.coroutines.launch
 
 class SignUpViewModel(private val authRepository: AuthRepository, private val firestoreRepository: FirestoreRepository) : ViewModel() {
