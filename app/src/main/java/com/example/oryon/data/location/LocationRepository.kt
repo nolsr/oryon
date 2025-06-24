@@ -1,8 +1,8 @@
 package com.example.oryon.data.location
 
-import com.example.oryon.domain.model.LocationData
 import kotlinx.coroutines.flow.Flow
+import android.location.Location
 
 interface LocationRepository {
-    fun observeLocation(): Flow<LocationData>
+    fun getLocationUpdates(): Flow<Location>
 }

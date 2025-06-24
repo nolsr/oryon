@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.oryon"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -69,4 +69,5 @@ dependencies {
 
     implementation ("com.google.android.gms:play-services-location:21.0.1")
     implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+
 }

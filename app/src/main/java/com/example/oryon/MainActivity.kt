@@ -1,5 +1,6 @@
 package com.example.oryon
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,7 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,6 +27,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.oryon.data.firebase.AuthRepositoryImpl
 import com.example.oryon.data.firebase.FirestoreRepository
 import com.example.oryon.data.firebase.FirestoreRepositoryImpl
+import com.example.oryon.data.location.LocationRepositoryImpl
+import com.example.oryon.data.location.LocationTrackingService
+import com.example.oryon.domain.location.TrackRunUseCase
 import com.example.oryon.ui.theme.OryonTheme
 import com.example.oryon.ui.screens.home.HomeScreen
 import com.example.oryon.ui.screens.ActivityScreen
@@ -38,6 +44,8 @@ import com.example.oryon.ui.screens.auth.login.LoginScreen
 import com.example.oryon.ui.screens.auth.signup.SignUpScreen
 import com.example.oryon.ui.screens.auth.signup.SignUpViewModel
 import com.example.oryon.ui.screens.auth.signup.SignUpViewModelFactory
+import com.example.oryon.ui.screens.home.HomeViewModel
+import com.example.oryon.ui.screens.home.HomeViewModelFactory
 import com.example.oryon.ui.screens.splash.SplashScreen
 import com.example.oryon.ui.screens.splash.SplashViewModel
 import com.example.oryon.ui.screens.splash.SplashViewModelFactory
@@ -111,7 +119,12 @@ fun MainApp() {
                 val viewModel: SplashViewModel = viewModel(factory = factory)
                 SplashScreen(navController = navController, viewModel = viewModel)
             }
-            composable(Screen.Home.route) { HomeScreen() }
+            composable(Screen.Home.route) {
+                val locationRepository = LocationRepositoryImpl()
+                val factory = HomeViewModelFactory(locationRepository)
+                val viewModel: HomeViewModel = viewModel(factory = factory)
+                HomeScreen(viewModel)
+            }
             composable(Screen.Activity.route) { ActivityScreen() }
             composable(Screen.Challenge.route) { ChallengeScreen() }
 
