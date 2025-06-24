@@ -1,0 +1,7 @@
+package com.example.oryon.data.firebase
+
+data class UserData(
+    val id: String = "",
+    val name: String = "",
+    val email: String = ""
+)

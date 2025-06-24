@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "983078197462",
+    "project_id": "oryon-db",
+    "storage_bucket": "oryon-db.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:983078197462:android:6657cb8a07c98bb4b7d177",
+        "android_client_info": {
+          "package_name": "com.example.oryon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAch6IOH5CfCV71AOId3IY4Zhb47XMwGqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
