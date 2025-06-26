@@ -44,7 +44,7 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
 
-    implementation (libs.androidx.ui.text.google.fonts.v181)
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.0")
     implementation("com.mapbox.maps:android:11.12.4")
     implementation("com.mapbox.extension:maps-compose:11.12.4")
     implementation(libs.androidx.core.ktx)

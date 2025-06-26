@@ -1,4 +1,4 @@
-package com.example.oryon.ui.screens
+package com.example.oryon.ui.screens.challenge
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

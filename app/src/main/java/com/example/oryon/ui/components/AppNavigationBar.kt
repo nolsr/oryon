@@ -63,11 +63,11 @@ fun AppNavigationBar(
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer, //sets the color of the icon when the item is selected
-                    selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer, //sets the color of the text when the item is selected
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimary, //sets the color of the icon when the item is selected
+                    selectedTextColor = MaterialTheme.colorScheme.onPrimary, //sets the color of the text when the item is selected
                     indicatorColor = MaterialTheme.colorScheme.primary, //sets the background color of the item when it is selected
-                    unselectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer, //sets the color of the icon when the item is not selected
-                    unselectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer //sets the color of the text when the item is not selected
+                    unselectedIconColor = MaterialTheme.colorScheme.onPrimary, //sets the color of the icon when the item is not selected
+                    unselectedTextColor = MaterialTheme.colorScheme.onPrimary //sets the color of the text when the item is not selected
                 )
                 // Hier könntest du auch einen Modifier für jedes NavigationBarItem hinzufügen, falls nötig
             )

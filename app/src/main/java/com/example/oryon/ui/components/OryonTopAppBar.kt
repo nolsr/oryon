@@ -1,6 +1,7 @@
 package com.example.oryon.ui.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -19,8 +20,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.oryon.data.firebase.AuthRepository
+import com.example.oryon.ui.theme.FiraSansFontFamily
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,7 +38,7 @@ fun OryonTopAppBar(
     var expanded by remember { mutableStateOf(false) }
 
     TopAppBar(
-        title = { Text(text, style = MaterialTheme.typography.titleLarge) },
+        title = { Text(text, style = MaterialTheme.typography.displayLarge, fontFamily = FiraSansFontFamily,) },
         actions = {
             Box {
                 IconButton(onClick = { expanded = true }) {

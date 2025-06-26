@@ -5,13 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -25,7 +29,7 @@ import com.example.oryon.domain.TrackRunUseCase
 import com.example.oryon.ui.theme.OryonTheme
 import com.example.oryon.ui.screens.home.HomeScreen
 import com.example.oryon.ui.screens.activity.ActivityScreen
-import com.example.oryon.ui.screens.ChallengeScreen
+import com.example.oryon.ui.screens.challenge.ChallengeScreen
 import com.example.oryon.ui.components.AppNavigationBar
 import com.example.oryon.ui.components.OryonTopAppBar
 import com.example.oryon.ui.components.Screen
@@ -79,6 +83,10 @@ fun MainApp() {
         Screen.Challenge.route
     )
 
+    val actionBtnScreens = listOf(
+        Screen.Challenge.route
+    )
+
     Scaffold(
         topBar = {
             if (currentRoute in topBarScreens) {
@@ -97,6 +105,20 @@ fun MainApp() {
                 )
             }
         },
+
+        floatingActionButton = {
+            if(currentRoute in actionBtnScreens) {
+                FloatingActionButton(
+                    onClick = {
+                        println("FAB geklickt!")
+                    },
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "Neue Challenge hinzufügen")
+                }
+            }
+        },
+
         bottomBar = {
             if (currentRoute in bottomBarScreens) {
                 AppNavigationBar(navController = navController, items = navigationItems)

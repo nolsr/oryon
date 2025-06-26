@@ -63,7 +63,7 @@ fun ActivityScreen(viewModel: ActivityViewModel) {
 
     val tabTitles = listOf("Statistik", "Läufe")
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         TabRow(selectedTabIndex = selectedTabIndex) {
             tabTitles.forEachIndexed { index, title ->
                 Tab(
@@ -103,19 +103,41 @@ fun RunStatisticsTab(sessions: List<RunSession>, runSessionsThisWeek: List<RunSe
     val totalDuration = sessions.fold(0L) { acc, session -> acc + session.durationSeconds }
     val thisWeekDuration = runSessionsThisWeek.fold(0L) { acc, session -> acc + session.durationSeconds }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Diese Woche", style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.height(24.dp))
-        TextCard(runSessionsThisWeek.size.toString(), "%.2f".format(thisWeekDistance), "%d:%02d".format(thisWeekDuration / 3600, (thisWeekDuration % 3600) / 60))
-        Spacer(modifier = Modifier.height(34.dp))
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        item {
+            Text("Diese Woche", style = MaterialTheme.typography.bodyLarge)
+        }
 
-        WeeklyDistanceChart(data = distanceByDay)
+        item {
+            TextCard(
+                runSessionsThisWeek.size.toString(),
+                "%.2f".format(thisWeekDistance),
+                "%d:%02d".format(thisWeekDuration / 3600, (thisWeekDuration % 3600) / 60)
+            )
+        }
 
-        Spacer(modifier = Modifier.height(46.dp))
+        item {
+            Spacer(modifier = Modifier.height(10.dp))
+            WeeklyDistanceChart(data = distanceByDay)
+        }
 
-        Text("Läufe insgesamt", style = MaterialTheme.typography.bodyLarge)
-        Spacer(modifier = Modifier.height(24.dp))
-        TextCard(sessions.size.toString(), "%.2f".format(totalDistance), "%d:%02d".format(totalDuration / 3600, (totalDuration % 3600) / 60))
+        item {
+            Spacer(modifier = Modifier.height(32.dp))
+            Text("Läufe insgesamt", style = MaterialTheme.typography.bodyLarge)
+        }
+
+        item {
+            TextCard(
+                sessions.size.toString(),
+                "%.2f".format(totalDistance),
+                "%d:%02d".format(totalDuration / 3600, (totalDuration % 3600) / 60)
+            )
+        }
     }
 }
 
@@ -143,7 +165,7 @@ fun TextCard(runs: String, distance: String, duration: String){
             ) {
                 Text(
                     text = "${runs}.",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.displayMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -158,7 +180,7 @@ fun TextCard(runs: String, distance: String, duration: String){
             ) {
                 Text(
                     text = "${distance}KM",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.displayMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -173,7 +195,7 @@ fun TextCard(runs: String, distance: String, duration: String){
             ) {
                 Text(
                     text = "${duration}H",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.displayMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -300,10 +322,9 @@ fun RunCard(session: RunSession) {
                     text = formattedDate,
                     style = MaterialTheme.typography.titleMedium
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "%.2f km".format(session.distanceMeters / 1000),
-                    style = MaterialTheme.typography.headlineMedium
+                    text = "%.2f KM".format(session.distanceMeters / 1000),
+                    style = MaterialTheme.typography.displayLarge
                 )
             }
 

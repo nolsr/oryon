@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -25,11 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.oryon.R
 import com.example.oryon.data.location.LocationTrackingService
 import com.example.oryon.ui.components.LocationPermissionHandler
+import com.example.oryon.ui.theme.FiraSansFontFamily
 import com.mapbox.geojson.Point
 import com.mapbox.maps.Style
 import com.mapbox.maps.dsl.cameraOptions
@@ -176,31 +179,40 @@ fun HomeScreen( viewModel: HomeViewModel ) {
             if (!isTracking) {
                 Button(
                     onClick = { viewModel.startTracking() },
-                    modifier = Modifier.fillMaxWidth().padding(8.dp).align(Alignment.BottomEnd)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .align(Alignment.BottomEnd)
+                        .height(75.dp),
                 ) {
-                    Text("Start Tracking")
+                    Text("Start Tracking",
+                        fontFamily = FiraSansFontFamily,
+                        fontWeight = FontWeight.Bold)
                 }
             }
 
             if (isTracking){
-                Row(modifier = Modifier.fillMaxWidth().padding(8.dp).align(Alignment.BottomEnd),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .align(Alignment.BottomEnd),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (!isPaused) {
                         Button(
                             onClick = { viewModel.pauseTracking() },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f).height(75.dp)
                         ) { Text("Pause") }
                     } else {
                         Button(
                             onClick = { viewModel.resumeTracking() },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f).height(75.dp)
                         ) { Text("Weiter") }
                     }
 
                     Button(
                         onClick = { viewModel.stopTracking() },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).height(75.dp)
                     ) { Text("Stop") }
                 }
             }
