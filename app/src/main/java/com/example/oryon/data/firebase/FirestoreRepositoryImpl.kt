@@ -68,7 +68,9 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
             }
 
             if (snapshot != null && !snapshot.isEmpty) {
-                val runs = snapshot.toObjects(RunSession::class.java)
+                val runs = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(RunSession::class.java)?.copy(id = doc.id)
+                }
                 trySend(runs)
             } else {
                 trySend(emptyList())

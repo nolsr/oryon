@@ -42,6 +42,7 @@ import com.example.oryon.ui.screens.auth.login.LoginScreen
 import com.example.oryon.ui.screens.auth.signup.SignUpScreen
 import com.example.oryon.ui.screens.auth.signup.SignUpViewModel
 import com.example.oryon.ui.screens.auth.signup.SignUpViewModelFactory
+import com.example.oryon.ui.screens.detail.RunDetailScreen
 import com.example.oryon.ui.screens.home.HomeViewModel
 import com.example.oryon.ui.screens.home.HomeViewModelFactory
 import com.example.oryon.ui.screens.splash.SplashScreen
@@ -157,8 +158,18 @@ fun MainApp() {
             composable(Screen.Activity.route) {
                 val factory = ActivityViewModelFactory(authRepository, firestoreRepository = FirestoreRepositoryImpl(authRepository))
                 val viewModel: ActivityViewModel = viewModel(factory = factory)
-                ActivityScreen(viewModel)
+                ActivityScreen(viewModel, navController = navController)
             }
+            composable("runDetail/{runId}") { backStackEntry ->
+                val runId = backStackEntry.arguments?.getString("runId")
+                println("Navigated to RunDetailScreen with runId = $runId")
+                val factory = ActivityViewModelFactory(authRepository, FirestoreRepositoryImpl(authRepository))
+                val viewModel: ActivityViewModel = viewModel(factory = factory)
+                runId?.let {
+                    RunDetailScreen(runId = it, viewModel = viewModel)
+                }
+            }
+
             composable(Screen.Challenge.route) { ChallengeScreen() }
 
         }

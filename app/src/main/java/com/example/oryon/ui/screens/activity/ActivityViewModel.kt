@@ -66,6 +66,7 @@ class ActivityViewModel(
             viewModelScope.launch {
                 firestoreRepository.getAllRunSessionsForUser(currentUserId)
                     .onEach { sessions ->
+                        println("Sessions IDs: ${sessions.map { it.id }}")
                         _runSessions.value = sessions
                     }
                     .launchIn(viewModelScope)

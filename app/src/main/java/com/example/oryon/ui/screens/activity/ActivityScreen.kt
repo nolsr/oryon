@@ -3,6 +3,7 @@ package com.example.oryon.ui.screens.activity
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.oryon.R
 import com.example.oryon.data.RunSession
 import com.example.oryon.data.health.RunSessionData
@@ -55,7 +57,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Composable
-fun ActivityScreen(viewModel: ActivityViewModel) {
+fun ActivityScreen(viewModel: ActivityViewModel, navController: NavController) {
     val runSessions by viewModel.runSessions.collectAsState()
     val runSessionsThisWeek by viewModel.runSessionsThisWeek.collectAsState()
     val runSessionsThisWeekbyDay by viewModel.distanceByDay.collectAsState()
@@ -76,13 +78,13 @@ fun ActivityScreen(viewModel: ActivityViewModel) {
 
         when (selectedTabIndex) {
             0 -> RunStatisticsTab(sessions = runSessions, runSessionsThisWeek = runSessionsThisWeek, distanceByDay = runSessionsThisWeekbyDay)
-            1 -> RunListTab(sessions = runSessions)
+            1 -> RunListTab(sessions = runSessions, navController = navController)
         }
     }
 }
 
 @Composable
-fun RunListTab(sessions: List<RunSession>) {
+fun RunListTab(sessions: List<RunSession>, navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -90,7 +92,10 @@ fun RunListTab(sessions: List<RunSession>) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(sessions) { session ->
-            RunCard(session)
+            RunCard(session, onCardClick = {
+                println("runDetail/${session.id}")
+                navController.navigate("runDetail/${session.id}")
+            })
         }
     }
 }
@@ -277,7 +282,7 @@ fun WeeklyDistanceChart(data: Map<String, Float>, modifier: Modifier = Modifier)
 
 
 @Composable
-fun RunCard(session: RunSession) {
+fun RunCard(session: RunSession, onCardClick: () -> Unit) {
     val formattedDate = remember(session.date) {
         val sdf = SimpleDateFormat("d. MMMM yyyy", Locale.GERMANY)
         sdf.format(session.date.toDate())
@@ -332,7 +337,7 @@ fun RunCard(session: RunSession) {
                 imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = "Mehr anzeigen",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp).clickable { onCardClick() }
             )
         }
     }
