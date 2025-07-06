@@ -2,9 +2,11 @@ package com.example.oryon.ui.screens.runDetail
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -22,6 +24,7 @@ import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.oryon.R
 import com.example.oryon.data.getCalories
 import com.example.oryon.ui.screens.activity.ActivityViewModel
@@ -31,7 +34,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Composable
-fun RunDetailScreen(runId: String, viewModel: ActivityViewModel) {
+fun RunDetailScreen(runId: String, viewModel: ActivityViewModel, navController: NavController) {
     val sessions by viewModel.runSessions.collectAsState()
     val session = sessions.find { it.id == runId }
 
@@ -64,7 +67,28 @@ fun RunDetailScreen(runId: String, viewModel: ActivityViewModel) {
                 Column {
                     val date = session.date.toDate()
 
-
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                navController.navigate("activity")
+                            }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Zurück",
+                            tint = Color.White
+                        )
+                        Text(
+                            text = "Laufdetails",
+                            modifier = Modifier.padding(start = 8.dp),
+                            style = MaterialTheme.typography.displayLarge.copy(
+                                color = Color.White,
+                                fontSize = 32.sp
+                            )
+                        )
+                    }
                     Spacer(modifier = Modifier.height(86.dp))
                     Text(
                         text = date.toWeekday(),

@@ -74,6 +74,7 @@ fun MainApp() {
         Screen.Home.route,
         Screen.Activity.route,
         Screen.Challenge.route,
+        "runDetail/{runId}",
         "challengeDetail/{challengeId}"
     )
 
@@ -81,7 +82,6 @@ fun MainApp() {
         Screen.Home.route,
         Screen.Activity.route,
         Screen.Challenge.route,
-        "runDetail/{runId}",
         "challengeDetail/{challengeId}"
     )
 
@@ -155,7 +155,7 @@ fun MainApp() {
                 val factory = ActivityViewModelFactory(authRepository, FirestoreRepositoryImpl(authRepository))
                 val viewModel: ActivityViewModel = viewModel(factory = factory)
                 runId?.let {
-                    RunDetailScreen(runId = it, viewModel = viewModel)
+                    RunDetailScreen(runId = it, viewModel = viewModel, navController = navController)
                 }
             }
 
