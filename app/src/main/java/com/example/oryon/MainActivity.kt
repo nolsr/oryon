@@ -73,13 +73,16 @@ fun MainApp() {
     val bottomBarScreens = listOf(
         Screen.Home.route,
         Screen.Activity.route,
-        Screen.Challenge.route
+        Screen.Challenge.route,
+        "challengeDetail/{challengeId}"
     )
 
     val topBarScreens = listOf(
         Screen.Home.route,
         Screen.Activity.route,
-        Screen.Challenge.route
+        Screen.Challenge.route,
+        "runDetail/{runId}",
+        "challengeDetail/{challengeId}"
     )
 
     val actionBtnScreens = listOf(
@@ -93,7 +96,8 @@ fun MainApp() {
                 val title = when (currentRoute) {
                     Screen.Home.route -> "Oryon"
                     Screen.Activity.route -> "Aktivität"
-                    Screen.Challenge.route -> "Challenge"
+                    Screen.Challenge.route -> "Challenges"
+                    "challengeDetail/{challengeId}" -> "Challenge"
                     else -> "Oryon"
                 }
 
