@@ -11,3 +11,8 @@ data class RunSession(
     val durationSeconds: Long = 0L,
     val pace: Float = 0f
 )
+
+fun RunSession.getCalories(weightKg: Int = 70): Int {
+    val km = distanceMeters / 1000f
+    return (km * weightKg).toInt()
+}
