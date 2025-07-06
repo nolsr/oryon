@@ -160,7 +160,7 @@ fun MainApp() {
             }
 
             composable(Screen.Challenge.route) {
-                val factory = ChallengeViewModelFactory(firestoreRepository = FirestoreRepositoryImpl(authRepository))
+                val factory = ChallengeViewModelFactory(firestoreRepository = FirestoreRepositoryImpl(authRepository), authRepository = authRepository)
                 val viewModel: ChallengeViewModel = viewModel(factory = factory)
                 ChallengeScreen(viewModel, navController)
 
@@ -168,7 +168,7 @@ fun MainApp() {
 
             composable("challengeDetail/{challengeId}") { backStackEntry ->
                 val challengeId = backStackEntry.arguments?.getString("challengeId")
-                val factory = ChallengeViewModelFactory(firestoreRepository = FirestoreRepositoryImpl(authRepository))
+                val factory = ChallengeViewModelFactory(firestoreRepository = FirestoreRepositoryImpl(authRepository), authRepository = authRepository)
                 val viewModel: ChallengeViewModel = viewModel(factory = factory)
                 challengeId?.let {
                     ChallengeDetailScreen(challengeId = it, viewModel = viewModel)

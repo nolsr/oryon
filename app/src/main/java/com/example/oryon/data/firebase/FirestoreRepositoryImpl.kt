@@ -1,6 +1,7 @@
 package com.example.oryon.data.firebase
 
 import com.example.oryon.data.ChallengeData
+import com.example.oryon.data.ChallengeGoal
 import com.example.oryon.data.ChallengeParticipant
 import com.example.oryon.data.RunSession
 import com.example.oryon.data.UserData
@@ -11,9 +12,12 @@ import java.time.Instant
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
@@ -32,7 +36,6 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         else null
     }
 
-
     override suspend fun createUser(user: UserData) {
         usersCollection.document(user.id).set(user).await()
 
@@ -46,7 +49,6 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
             null
         }
     }
-
 
     override suspend fun saveRunSession(distanceMeters: Float, durationSec: Long, pace: Float) {
 
@@ -104,45 +106,51 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
             if (snapshot != null) {
                 val documents = snapshot.documents
 
-                val challengeJobs = documents.mapNotNull { doc ->
-                    val id = doc.id
-                    val name = doc.getString("name") ?: return@mapNotNull null
-                    val type = doc.getString("type") ?: return@mapNotNull null
-                    val data = doc.get("data") as? Map<String, Any> ?: emptyMap()
-                    val participantIds = doc.get("participantIds") as? List<String> ?: emptyList()
+                launch {
+                    val challenges = documents.mapNotNull { doc ->
+                        val id = doc.id
+                        val name = doc.getString("name") ?: return@mapNotNull null
+                        val type = doc.getString("type") ?: return@mapNotNull null
+                        val data = doc.get("data") as? Map<String, Any> ?: emptyMap()
+                        val goal = parseGoal(type, data) ?: return@mapNotNull null
 
-                    kotlinx.coroutines.GlobalScope.async {
-                        val participants = participantIds.map { participantUid ->
-                            val userSnapshot = usersCollection
-                                .document(participantUid)
-                                .get()
-                                .await()
+                        val participantIds = doc.get("participantIds") as? List<String> ?: emptyList()
+                        val userArray = doc.get("user") as? List<Map<String, Any>> ?: emptyList()
 
-                            val userName = userSnapshot.getString("name")
-                            //val progress = progressMap[participantUid] ?: 0f
+                        val participants = coroutineScope {
+                            participantIds.map { uid ->
+                                async {
+                                    val userData = userArray.find { it["id"] == uid }
+                                    val progress = (userData?.get("progress") as? Number)?.toFloat() ?: 0f
 
-                            ChallengeParticipant(
-                                uid = participantUid,
-                                name = userName,
-                                //progress = progress
-                            )
+                                    val name = try {
+                                        usersCollection.document(uid).get().await().getString("name")
+                                    } catch (e: Exception) {
+                                        null
+                                    }
+
+                                    ChallengeParticipant(
+                                        uid = uid,
+                                        name = name,
+                                        progress = progress
+                                    )
+                                }
+                            }.awaitAll()
                         }
+
+                        println("Participants: $participants")
 
                         ChallengeData(
                             id = id,
                             name = name,
                             type = type,
                             data = data,
+                            goal = goal,
                             participants = participants
                         )
                     }
-                }
 
-                // Alle async Jobs gesammelt ausführen und in Liste umwandeln
-                kotlinx.coroutines.GlobalScope.launch {
-                    val challengeList = challengeJobs.awaitAll()
-                    println(challengeList)
-                    trySend(challengeList).isSuccess
+                    trySend(challenges).isSuccess
                 }
             }
         }
@@ -150,6 +158,14 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         awaitClose { registration.remove() }
     }
 
-
+    private fun parseGoal(type: String, data: Map<String, Any>): ChallengeGoal? {
+        return when (type) {
+            "distance" -> ChallengeGoal.Distance((data["target"] as? Number)?.toFloat() ?: return null)
+            "duration" -> ChallengeGoal.Duration((data["target"] as? Number)?.toInt() ?: return null)
+            "runcount" -> ChallengeGoal.RunCount((data["target"] as? Number)?.toInt() ?: return null)
+            "days" -> ChallengeGoal.Days((data["target"] as? Number)?.toInt() ?: return null)
+            else -> null
+        }
+    }
 
 }
