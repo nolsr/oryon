@@ -1,52 +1,189 @@
 package com.example.oryon.ui.screens.runDetail
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.VerticalAlignmentLine
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.oryon.R
+import com.example.oryon.data.getCalories
 import com.example.oryon.ui.screens.activity.ActivityViewModel
+import com.example.oryon.ui.theme.FiraSansFontFamily
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun RunDetailScreen(runId: String, viewModel: ActivityViewModel) {
     val sessions by viewModel.runSessions.collectAsState()
-
     val session = sessions.find { it.id == runId }
 
     if (session == null) {
-        // Ladezustand oder Fehleranzeige
         Text("Lade Daten ...")
     } else {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
         ) {
-            Text("Lauf vom ${session.date.toDate().toGermanString()}", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(16.dp))
+            Box(modifier = Modifier.fillMaxSize()) {
+                Image(
+                    painter = painterResource(id = R.drawable.run_details_screen_bg),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                )
+            }
 
-            Text("Strecke: %.2f km".format(session.distanceMeters / 1000f))
-            Text("Dauer: %d:%02d min".format(session.durationSeconds / 60, session.durationSeconds % 60))
-            Text("Pace: %.2f min/km".format(session.pace))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(42.dp)
+            ) {
+                Column {
+                    val date = session.date.toDate()
+
+
+                    Spacer(modifier = Modifier.height(86.dp))
+                    Text(
+                        text = date.toWeekday(),
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            color = Color.White,
+                            fontSize = 32.sp
+                        )
+                    )
+                    Text(
+                        text = date.toDisplayString(),
+                        style = MaterialTheme.typography.displayLarge.copy(
+                            color = Color.White,
+                            fontSize = 32.sp
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(86.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "%.1f".format(session.distanceMeters / 1000f),
+                                style = MaterialTheme.typography.displayLarge.copy(
+                                    color = Color(0xFFFF6F00), // Orange
+                                    fontSize = 100.sp
+                                )
+                            )
+                            Text(
+                                text = "Kilometer",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = Color.White,
+                                    fontSize = 28.sp
+                                )
+                            )
+                        }
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "${session.durationSeconds / 60}",
+                                style = MaterialTheme.typography.displayLarge.copy(
+                                    color = Color.White,
+                                    fontSize = 100.sp
+                                )
+                            )
+                            Text(
+                                text = "Minuten",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = Color.White,
+                                    fontSize = 28.sp
+                                )
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    HorizontalDivider(
+                        color = Color.White,
+                        thickness = 1.dp,
+                    )
+                    InfoRow("Pace", "%.2f".format(session.pace), "min/km")
+                    HorizontalDivider(
+                        color = Color.White,
+                        thickness = 1.dp
+                    )
+                    InfoRow("Kalorien", "${session.getCalories()}", "kcal")
+                    HorizontalDivider(
+                        color = Color.White,
+                        thickness = 1.dp,
+                     )
+                }
+            }
         }
     }
 }
 
+@Composable
+fun InfoRow(label: String, value: String, unit: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge.copy(color = Color.White)
+        )
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.displayLarge.copy(
+                    color = Color.White,
+                    fontSize = 28.sp
+                )
+            )
+            Text(
+                text = unit,
+                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White)
+            )
+        }
+    }
+}
 
-
-fun Date.toGermanString(): String =
+fun Date.toDisplayString(): String =
     this.toInstant()
         .atZone(ZoneId.systemDefault())
         .toLocalDate()
         .format(DateTimeFormatter.ofPattern("dd. MMMM yyyy", Locale.GERMAN))
+
+fun Date.toWeekday(): String =
+    this.toInstant()
+        .atZone(ZoneId.systemDefault())
+        .dayOfWeek
+        .getDisplayName(java.time.format.TextStyle.FULL, Locale.GERMAN)
