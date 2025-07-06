@@ -1,5 +1,7 @@
 package com.example.oryon.data.firebase
 
+import com.example.oryon.data.ChallengeData
+import com.example.oryon.data.ChallengeParticipant
 import com.example.oryon.data.RunSession
 import com.example.oryon.data.UserData
 import com.google.firebase.firestore.CollectionReference
@@ -9,9 +11,12 @@ import java.time.Instant
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import java.util.Date
 
 
@@ -79,6 +84,72 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
 
         awaitClose { registration.remove() }
     }
+
+    override suspend fun getUserChallenges(): Flow<List<ChallengeData>> = callbackFlow {
+        val uid = authRepository.getUID()
+        if (uid == null) {
+            close(IllegalStateException("User not logged in"))
+            return@callbackFlow
+        }
+
+        val query = firestore.collection("challenges")
+            .whereArrayContains("participantIds", uid)
+
+        val registration = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null) {
+                val documents = snapshot.documents
+
+                val challengeJobs = documents.mapNotNull { doc ->
+                    val id = doc.id
+                    val name = doc.getString("name") ?: return@mapNotNull null
+                    val type = doc.getString("type") ?: return@mapNotNull null
+                    val data = doc.get("data") as? Map<String, Any> ?: emptyMap()
+                    val participantIds = doc.get("participantIds") as? List<String> ?: emptyList()
+
+                    kotlinx.coroutines.GlobalScope.async {
+                        val participants = participantIds.map { participantUid ->
+                            val userSnapshot = usersCollection
+                                .document(participantUid)
+                                .get()
+                                .await()
+
+                            val userName = userSnapshot.getString("name")
+                            //val progress = progressMap[participantUid] ?: 0f
+
+                            ChallengeParticipant(
+                                uid = participantUid,
+                                name = userName,
+                                //progress = progress
+                            )
+                        }
+
+                        ChallengeData(
+                            id = id,
+                            name = name,
+                            type = type,
+                            data = data,
+                            participants = participants
+                        )
+                    }
+                }
+
+                // Alle async Jobs gesammelt ausführen und in Liste umwandeln
+                kotlinx.coroutines.GlobalScope.launch {
+                    val challengeList = challengeJobs.awaitAll()
+                    println(challengeList)
+                    trySend(challengeList).isSuccess
+                }
+            }
+        }
+
+        awaitClose { registration.remove() }
+    }
+
 
 
 }

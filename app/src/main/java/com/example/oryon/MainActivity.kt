@@ -42,6 +42,8 @@ import com.example.oryon.ui.screens.auth.login.LoginScreen
 import com.example.oryon.ui.screens.auth.signup.SignUpScreen
 import com.example.oryon.ui.screens.auth.signup.SignUpViewModel
 import com.example.oryon.ui.screens.auth.signup.SignUpViewModelFactory
+import com.example.oryon.ui.screens.challenge.ChallengeViewModel
+import com.example.oryon.ui.screens.challenge.ChallengeViewModelFactory
 import com.example.oryon.ui.screens.detail.RunDetailScreen
 import com.example.oryon.ui.screens.home.HomeViewModel
 import com.example.oryon.ui.screens.home.HomeViewModelFactory
@@ -107,19 +109,6 @@ fun MainApp() {
             }
         },
 
-        floatingActionButton = {
-            if(currentRoute in actionBtnScreens) {
-                FloatingActionButton(
-                    onClick = {
-                        println("FAB geklickt!")
-                    },
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Neue Challenge hinzufügen")
-                }
-            }
-        },
-
         bottomBar = {
             if (currentRoute in bottomBarScreens) {
                 AppNavigationBar(navController = navController, items = navigationItems)
@@ -170,7 +159,12 @@ fun MainApp() {
                 }
             }
 
-            composable(Screen.Challenge.route) { ChallengeScreen() }
+            composable(Screen.Challenge.route) {
+                val factory = ChallengeViewModelFactory(firestoreRepository = FirestoreRepositoryImpl(authRepository))
+                val viewModel: ChallengeViewModel = viewModel(factory = factory)
+                ChallengeScreen(viewModel)
+
+            }
 
         }
     }
