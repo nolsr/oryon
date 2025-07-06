@@ -5,12 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,7 +39,8 @@ import com.example.oryon.ui.screens.auth.signup.SignUpViewModel
 import com.example.oryon.ui.screens.auth.signup.SignUpViewModelFactory
 import com.example.oryon.ui.screens.challenge.ChallengeViewModel
 import com.example.oryon.ui.screens.challenge.ChallengeViewModelFactory
-import com.example.oryon.ui.screens.detail.RunDetailScreen
+import com.example.oryon.ui.screens.challengeDetail.ChallengeDetailScreen
+import com.example.oryon.ui.screens.runDetail.RunDetailScreen
 import com.example.oryon.ui.screens.home.HomeViewModel
 import com.example.oryon.ui.screens.home.HomeViewModelFactory
 import com.example.oryon.ui.screens.splash.SplashScreen
@@ -162,7 +158,17 @@ fun MainApp() {
             composable(Screen.Challenge.route) {
                 val factory = ChallengeViewModelFactory(firestoreRepository = FirestoreRepositoryImpl(authRepository))
                 val viewModel: ChallengeViewModel = viewModel(factory = factory)
-                ChallengeScreen(viewModel)
+                ChallengeScreen(viewModel, navController)
+
+            }
+
+            composable("challengeDetail/{challengeId}") { backStackEntry ->
+                val challengeId = backStackEntry.arguments?.getString("challengeId")
+                val factory = ChallengeViewModelFactory(firestoreRepository = FirestoreRepositoryImpl(authRepository))
+                val viewModel: ChallengeViewModel = viewModel(factory = factory)
+                challengeId?.let {
+                    ChallengeDetailScreen(challengeId = it, viewModel = viewModel)
+                }
 
             }
 

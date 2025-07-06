@@ -1,5 +1,6 @@
 package com.example.oryon.ui.screens.challenge
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,18 +22,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.oryon.data.ChallengeData
 import com.example.oryon.ui.screens.activity.ActivityViewModel
 
 @Composable
-fun ChallengeScreen( viewModel: ChallengeViewModel) {
+fun ChallengeScreen( viewModel: ChallengeViewModel, navController: NavController) {
     val challenges by viewModel.challenges.collectAsState()
 
-    ChallengeList(challenges)
+    ChallengeList(challenges, navController)
 }
 
 @Composable
-fun ChallengeList(challenges: List<ChallengeData>) {
+fun ChallengeList(challenges: List<ChallengeData>, navController: NavController) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -40,15 +42,17 @@ fun ChallengeList(challenges: List<ChallengeData>) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(challenges) { challenge ->
-            ChallengeCard(challenge)
+            ChallengeCard(challenge, onCardClick = {
+                navController.navigate("challengeDetail/${challenge.id}")
+            })
         }
     }
 }
 
 @Composable
-fun ChallengeCard(challenge: ChallengeData) {
+fun ChallengeCard(challenge: ChallengeData, onCardClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onCardClick() },
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {

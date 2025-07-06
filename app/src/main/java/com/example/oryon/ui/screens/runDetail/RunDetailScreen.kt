@@ -1,6 +1,5 @@
-package com.example.oryon.ui.screens.detail
+package com.example.oryon.ui.screens.runDetail
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
