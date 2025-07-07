@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.oryon.data.ChallengeData
 import com.example.oryon.data.ChallengeGoal
 import com.example.oryon.data.ChallengeParticipant
+import com.example.oryon.data.ParticipantRanking
 import com.example.oryon.data.firebase.AuthRepository
 import com.example.oryon.data.firebase.FirestoreRepository
 import com.example.oryon.data.location.LocationRepository
@@ -81,6 +82,18 @@ class ChallengeViewModel(
             is ChallengeGoal.RunCount -> (participant.progress / goal.targetRuns).coerceIn(0f, 1f)
             is ChallengeGoal.Days -> (participant.progress / goal.targetDays).coerceIn(0f, 1f)
         }
+    }
+
+    fun getCurrentChallengeRanking(): List<ParticipantRanking> {
+        val challenge = _selectedChallenge.value ?: return emptyList()
+        return challenge.participants
+            .sortedByDescending { it.progress }
+            .map {
+                ParticipantRanking(
+                    name = it.name ?: "Unbekannt",
+                    progress = it.progress
+                )
+            }
     }
 }
 

@@ -15,6 +15,11 @@ data class ChallengeParticipant(
     val progress: Float,
 )
 
+data class ParticipantRanking(
+    val name: String,
+    val progress: Float
+)
+
 sealed class ChallengeGoal {
     data class Distance(val targetKm: Float) : ChallengeGoal()
     data class Duration(val targetMinutes: Int) : ChallengeGoal()
