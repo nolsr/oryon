@@ -10,30 +10,22 @@ import androidx.compose.ui.unit.sp
 import com.example.oryon.R
 import androidx.compose.ui.text.googlefonts.Font
 
-
-
-// 1. Definiere den GoogleFont Provider
 val provider = GoogleFont.Provider(
     providerAuthority = "com.google.android.gms.fonts",
     providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs // Zertifikate für die Verifizierung
+    certificates = R.array.com_google_android_gms_fonts_certs
 )
 
-// 2. Definiere den Namen der Schriftart, wie er bei Google Fonts bekannt ist
 val firaSansFontName = GoogleFont("Fira Sans")
 
-// 3. Erstelle die FontFamily mit den gewünschten Schriftschnitten
 val FiraSansFontFamily = FontFamily(
     Font(googleFont = firaSansFontName, fontProvider = provider, weight = FontWeight.Normal),
     Font(googleFont = firaSansFontName, fontProvider = provider, weight = FontWeight.Medium),
     Font(googleFont = firaSansFontName, fontProvider = provider, weight = FontWeight.SemiBold),
     Font(googleFont = firaSansFontName, fontProvider = provider, weight = FontWeight.Bold, style = FontStyle.Italic)
-    // Füge weitere Schriftschnitte hinzu, falls benötigt (z.B. Italic)
-    // Font(googleFont = firaSansFontName, fontProvider = provider, weight = FontWeight.Normal, style = FontStyle.Italic)
-)
+    )
 
 
-// Set of Material typography styles to start with
 val AppTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = FiraSansFontFamily,

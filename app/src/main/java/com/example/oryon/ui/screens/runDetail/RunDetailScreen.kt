@@ -1,5 +1,6 @@
 package com.example.oryon.ui.screens.runDetail
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,7 +19,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.res.painterResource
@@ -29,6 +32,7 @@ import com.example.oryon.R
 import com.example.oryon.data.getCalories
 import com.example.oryon.ui.screens.activity.ActivityViewModel
 import com.example.oryon.ui.theme.FiraSansFontFamily
+import com.google.firebase.firestore.GeoPoint
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -89,7 +93,14 @@ fun RunDetailScreen(runId: String, viewModel: ActivityViewModel, navController: 
                             )
                         )
                     }
-                    Spacer(modifier = Modifier.height(86.dp))
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                        RoutePathPreview(route = session.route, modifier = Modifier
+                            .height(200.dp))
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     Text(
                         text = date.toWeekday(),
                         style = MaterialTheme.typography.displayMedium.copy(
@@ -105,7 +116,7 @@ fun RunDetailScreen(runId: String, viewModel: ActivityViewModel, navController: 
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(86.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -199,6 +210,52 @@ fun InfoRow(label: String, value: String, unit: String) {
         }
     }
 }
+
+@Composable
+fun RoutePathPreview(route: List<GeoPoint>, modifier: Modifier = Modifier) {
+    if (route.size < 2) return
+
+    BoxWithConstraints(
+        modifier = modifier
+            .aspectRatio(1f)
+            .padding(16.dp)
+    ) {
+        val widthPx = constraints.maxWidth.toFloat()
+        val heightPx = constraints.maxHeight.toFloat()
+        val offsets: List<Offset> = scaleGeoPointsToCanvas(route, widthPx, heightPx)
+
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            for (i in 0 until offsets.size - 1) {
+                drawLine(
+                    color = Color(0xFFFF6F00),
+                    start = offsets[i],
+                    end = offsets[i + 1],
+                    strokeWidth = 16f,
+                    cap = StrokeCap.Round
+                )
+            }
+        }
+    }
+}
+
+fun scaleGeoPointsToCanvas(points: List<GeoPoint>, width: Float, height: Float): List<Offset> {
+    if (points.isEmpty()) return emptyList()
+
+    val minLat = points.minOf { it.latitude }
+    val maxLat = points.maxOf { it.latitude }
+    val minLon = points.minOf { it.longitude }
+    val maxLon = points.maxOf { it.longitude }
+
+    val latRange = maxLat - minLat
+    val lonRange = maxLon - minLon
+
+    return points.map { point ->
+        val x = ((point.longitude - minLon) / lonRange).toFloat() * width
+        val y = height - ((point.latitude - minLat) / latRange).toFloat() * height
+        Offset(x, y)
+    }
+}
+
 
 fun Date.toDisplayString(): String =
     this.toInstant()
