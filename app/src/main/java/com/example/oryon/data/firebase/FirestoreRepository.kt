@@ -9,6 +9,7 @@ interface FirestoreRepository {
     //User functions
     suspend fun createUser(user: UserData)
     suspend fun getUserById(id: String): UserData?
+    suspend fun findUserByEmail(email: String): UserData?
 
     //RunSession functions
     suspend fun saveRunSession(distanceMeters: Float, durationSec: Long, pace: Float)
@@ -16,4 +17,5 @@ interface FirestoreRepository {
 
     //Challenge functions
     suspend fun getUserChallenges(): Flow<List<ChallengeData>>
+    suspend fun addUserToChallenge(challengeId: String, userId: String)
 }

@@ -95,6 +95,18 @@ class ChallengeViewModel(
                 )
             }
     }
+
+    fun addParticipantByEmail(challengeId: String, email: String) {
+        viewModelScope.launch {
+            val user = firestoreRepository.findUserByEmail(email)
+            if (user != null) {
+                firestoreRepository.addUserToChallenge(challengeId, user.id)
+            } else {
+                // Fehlerbehandlung: Nutzer nicht gefunden
+            }
+        }
+    }
+
 }
 
 

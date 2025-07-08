@@ -50,6 +50,15 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         }
     }
 
+    override suspend fun findUserByEmail(email: String): UserData? {
+        val snapshot = firestore.collection("users")
+            .whereEqualTo("email", email)
+            .get()
+            .await()
+
+        return snapshot.documents.firstOrNull()?.toObject(UserData::class.java)
+    }
+
     override suspend fun saveRunSession(distanceMeters: Float, durationSec: Long, pace: Float) {
 
         val session = RunSession(
@@ -156,6 +165,27 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         }
 
         awaitClose { registration.remove() }
+    }
+
+    override suspend fun addUserToChallenge(challengeId: String, userId: String) {
+        val challengeRef = firestore.collection("challenges").document(challengeId)
+
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(challengeRef)
+            val currentIds = snapshot.get("participantIds") as? List<String> ?: emptyList()
+            val updatedIds = currentIds + userId
+
+            val currentParticipants = snapshot.get("participants") as? List<Map<String, Any>> ?: emptyList()
+            val updatedParticipants = currentParticipants + mapOf(
+                "uid" to userId,
+                "progress" to 0f
+            )
+
+            transaction.update(challengeRef, mapOf(
+                "participantIds" to updatedIds.distinct(),
+                "participants" to updatedParticipants
+            ))
+        }
     }
 
     private fun parseGoal(type: String, data: Map<String, Any>): ChallengeGoal? {

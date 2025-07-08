@@ -10,19 +10,28 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.oryon.R
 import com.example.oryon.data.ChallengeData
@@ -73,7 +83,7 @@ fun ChallengeDetailScreen( challengeId: String, viewModel: ChallengeViewModel) {
 
         when (selectedTabIndex) {
             0 -> ChallengeDetailTab(challenge, currentUser, progress, ranking)
-            1 -> MemberTab(ranking)
+            1 -> MemberTab(ranking, challengeId, viewModel)
         }
     }
 }
@@ -83,89 +93,160 @@ fun ChallengeDetailTab(challenge: ChallengeData?, currentUser:ChallengeParticipa
     val progressKm = currentUser?.progress ?: 0f
     val targetKm = (challenge?.goal as? ChallengeGoal.Distance)?.targetKm ?: 0f
 
-    Column {
+    LazyColumn {
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-
-        )
-        {
-            Image(
-                painter = painterResource(R.drawable.challenge_hero_1),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize()
-            )
-
-            Column(
+        item {
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.2f))
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (challenge != null) {
-                    Text(
-                        text = challenge.name,
-                        style = MaterialTheme.typography.displayMedium.copy(color = Color.White)
-                    )
-                }
-                if (challenge != null) {
-                    Text(
-                        text = challenge.type,
-                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
-                    )
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+
+            )
+            {
+                Image(
+                    painter = painterResource(R.drawable.challenge_hero_1),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.matchParentSize()
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.2f))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (challenge != null) {
+                        Text(
+                            text = challenge.name,
+                            style = MaterialTheme.typography.displayMedium.copy(color = Color.White)
+                        )
+                    }
+                    if (challenge != null) {
+                        Text(
+                            text = challenge.type,
+                            style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+                        )
+                    }
                 }
             }
         }
 
-        Column(modifier = Modifier.padding(16.dp)) {
-            if (progress != null && challenge != null) {
-                TextCard((progress * 100), progressKm.toInt(), targetKm.toInt())
-            }
+        item {
 
+
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Deine Challenge-Statistik:")
+                if (progress != null && challenge != null) {
+                    TextCard((progress * 100), progressKm.toInt(), targetKm.toInt())
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("Top 3")
+                TopThreeRanking(ranking)
+            }
         }
     }
 }
 
 @Composable
-fun MemberTab(ranking: List<ParticipantRanking>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        ranking.forEachIndexed { index, participant ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("${index + 1}.", style = MaterialTheme.typography.displayMedium)
-                    Image(
-                        painter = painterResource(R.drawable.avatar),
-                        contentDescription = "Avatar",
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .size(45.dp)
-                    )
-                    Text(participant.name, style = MaterialTheme.typography.titleMedium)
-                }
+fun MemberTab(
+    ranking: List<ParticipantRanking>,
+    challengeId: String,
+    viewModel: ChallengeViewModel
+) {
+    var showDialog by remember { mutableStateOf(false) }
 
-                Text("${participant.progress} km", style = MaterialTheme.typography.titleMedium)
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Mitglied hinzufügen")
+            }
+        }
+    ) { paddingValues ->
+
+        if (showDialog) {
+            AddParticipantDialog(
+                onDismiss = { showDialog = false },
+                onAdd = { email ->
+                    viewModel.addParticipantByEmail(challengeId, email)
+                    showDialog = false
+                }
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+            ranking.forEachIndexed { index, participant ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("${index + 1}.", style = MaterialTheme.typography.titleMedium)
+                        Image(
+                            painter = painterResource(R.drawable.avatar),
+                            contentDescription = "Avatar",
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .size(45.dp)
+                        )
+                        Text(participant.name, style = MaterialTheme.typography.titleMedium)
+                    }
+
+                    Text("${participant.progress} km", style = MaterialTheme.typography.titleMedium)
+                }
             }
         }
     }
 }
+
+
+@Composable
+fun AddParticipantDialog(
+    onDismiss: () -> Unit,
+    onAdd: (String) -> Unit
+) {
+    var email by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Mitglied hinzufügen") },
+        text = {
+            Column {
+                Text("Gib die E-Mail-Adresse des Nutzers ein:")
+                Spacer(Modifier.height(8.dp))
+                TextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("E-Mail") }
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onAdd(email) }) {
+                Text("Hinzufügen")
+            }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onDismiss) {
+                Text("Abbrechen")
+            }
+        }
+    )
+}
+
 
 
 
@@ -243,6 +324,74 @@ fun ChallengeProgressIndicator(progress: Float) {
         )
     }
 }
+
+@Composable
+fun TopThreeRanking(ranking: List<ParticipantRanking>) {
+    val topThree = ranking.take(3)
+    if (topThree.size < 3) return
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.Bottom
+    ) {
+
+        TopRankingItem(
+            rank = 2,
+            participant = topThree[1],
+            imageSize = 64.dp,
+            offsetY = 12.dp
+        )
+
+        TopRankingItem(
+            rank = 1,
+            participant = topThree[0],
+            imageSize = 80.dp,
+            offsetY = 0.dp
+        )
+
+        TopRankingItem(
+            rank = 3,
+            participant = topThree[2],
+            imageSize = 64.dp,
+            offsetY = 12.dp
+        )
+    }
+}
+
+@Composable
+fun TopRankingItem(
+    rank: Int,
+    participant: ParticipantRanking,
+    imageSize: Dp,
+    offsetY: Dp
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.offset(y = offsetY)
+    ) {
+        Text(text = "$rank", style = MaterialTheme.typography.displayMedium)
+        Spacer(modifier = Modifier.height(4.dp))
+        Image(
+            painter = painterResource(R.drawable.avatar),
+            contentDescription = "Profilbild",
+            modifier = Modifier.size(imageSize)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = participant.name,
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 1
+        )
+        Text(
+            text = "${participant.progress} km",
+            style = MaterialTheme.typography.labelSmall
+        )
+    }
+}
+
 
 
 
