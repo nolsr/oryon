@@ -265,9 +265,7 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
 
             firestore.collection("challenges")
                 .document(doc.id)
-                .update("user", updatedParticipants)
-
-            println("Updated participants: $updatedParticipants")
+                .update("participants", updatedParticipants)
 
         }
     }
