@@ -1,5 +1,6 @@
 package com.example.oryon.ui.screens.challengeDetail
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -161,31 +163,14 @@ fun MemberTab(
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Mitglied hinzufügen")
-            }
-        }
-    ) { paddingValues ->
+    Box(modifier = Modifier.fillMaxSize()) {
 
-        if (showDialog) {
-            AddParticipantDialog(
-                onDismiss = { showDialog = false },
-                onAdd = { email ->
-                    viewModel.addParticipantByEmail(challengeId, email)
-                    showDialog = false
-                }
-            )
-        }
-
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            ranking.forEachIndexed { index, participant ->
+            itemsIndexed(ranking) { index, participant ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -209,8 +194,30 @@ fun MemberTab(
                 }
             }
         }
+
+        FloatingActionButton(
+            onClick = { showDialog = true },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ) {
+            Icon(painter = painterResource(R.drawable.user_plus), contentDescription = "Mitglied hinzufügen")
+        }
+
+        if (showDialog) {
+            AddParticipantDialog(
+                onDismiss = { showDialog = false },
+                onAdd = { email ->
+                    viewModel.addParticipantByEmail(challengeId, email)
+                    showDialog = false
+                }
+            )
+        }
     }
 }
+
 
 
 @Composable

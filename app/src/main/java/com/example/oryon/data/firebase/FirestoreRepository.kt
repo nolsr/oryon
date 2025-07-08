@@ -18,4 +18,5 @@ interface FirestoreRepository {
     //Challenge functions
     suspend fun getUserChallenges(): Flow<List<ChallengeData>>
     suspend fun addUserToChallenge(challengeId: String, userId: String)
+    suspend fun updateChallengeProgressAfterRun(distanceMeters: Float, durationSec: Long)
 }

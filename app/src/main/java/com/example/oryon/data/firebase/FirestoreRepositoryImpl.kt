@@ -198,4 +198,57 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         }
     }
 
+    override suspend fun updateChallengeProgressAfterRun(distanceMeters: Float, durationSec: Long) {
+        println("updateChallengeProgressAfterRun called")
+        val uid = authRepository.getUID() ?: return
+
+        val challengeDocs = firestore.collection("challenges")
+            .whereArrayContains("participantIds", uid)
+            .get()
+            .await()
+
+        println("Challenge documents: ${challengeDocs.documents}")
+
+        for (doc in challengeDocs.documents) {
+            val type = doc.getString("type") ?: continue
+            val data = doc.get("data") as? Map<String, Any> ?: continue
+            val participants = doc.get("user") as? List<Map<String, Any>> ?: continue
+
+            val goal = parseGoal(type, data) ?: continue
+
+            val updatedParticipants = participants.map { participant ->
+                val participantId = participant["id"] as? String ?: return@map participant
+                val existingProgress = (participant["progress"] as? Number)?.toFloat() ?: 0f
+
+                val updatedProgress = if (participantId == uid) {
+                    existingProgress + when (goal) {
+                        is ChallengeGoal.Distance -> (distanceMeters / 1000)
+                        is ChallengeGoal.Duration -> (durationSec / 60).toFloat()
+                        is ChallengeGoal.RunCount -> 1f
+                        is ChallengeGoal.Days -> {
+                            // Optional: Prüfen, ob der letzte Lauf an einem anderen Tag war
+                            1f
+                        }
+                    }
+                } else {
+                    existingProgress
+                }
+
+                println("Participant ID: $participantId, Existing Progress: $existingProgress, Updated Progress: $updatedProgress")
+
+                mapOf(
+                    "id" to participantId,
+                    "progress" to updatedProgress
+                )
+            }
+
+            firestore.collection("challenges")
+                .document(doc.id)
+                .update("user", updatedParticipants)
+
+            println("Updated participants: $updatedParticipants")
+
+        }
+    }
+
 }

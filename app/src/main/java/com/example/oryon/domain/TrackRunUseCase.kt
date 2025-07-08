@@ -2,6 +2,7 @@ package com.example.oryon.domain
 
 import com.example.oryon.data.location.LocationRepository
 import android.location.Location
+import android.util.Log
 import com.example.oryon.data.firebase.FirestoreRepository
 import com.example.oryon.data.health.HealthRepository
 import kotlinx.coroutines.flow.*
@@ -63,14 +64,35 @@ class TrackRunUseCase(private val locationRepository: LocationRepository, privat
     }
 
     fun stopTracking() {
+        val distance = _distanceMeters.value
+        val duration = _elapsedTimeSeconds.value
+
+        val pace = if (distance > 0f) {
+            (duration / 60f) / (distance / 1000f)
+        } else {
+            0f
+        }
+
+        println("Tracking gestoppt: $distance Meter, $duration Sekunden")
+
         scope.launch {
             try {
-               firestoreRepository.saveRunSession(
-                   distanceMeters = _distanceMeters.value,
-                   durationSec = _elapsedTimeSeconds.value,
-                   pace = if (_distanceMeters.value > 0) (_elapsedTimeSeconds.value / 60f) / (_distanceMeters.value / 1000f) else 0f
-               )
-            } catch (e: Exception) {}
+                firestoreRepository.saveRunSession(
+                    distanceMeters = distance,
+                    durationSec = duration,
+                    pace = pace
+                )
+
+                firestoreRepository.updateChallengeProgressAfterRun(
+                    distanceMeters = distance,
+                    durationSec = duration
+                )
+
+                Log.i("Tracking", "Lauf gespeichert und Fortschritt aktualisiert")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("Firestore", "Fehler beim Aktualisieren der Challenge", e)
+            }
         }
 
         trackingJob?.cancel()
