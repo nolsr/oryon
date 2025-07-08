@@ -28,3 +28,14 @@ sealed class ChallengeGoal {
 }
 
 
+fun getChallengeTypeText(type: String): String {
+    return when (type) {
+        "distance" -> "Distanz-Challenge"
+        "duration" -> "Dauer-Challenge"
+        "runcount" -> "Laufanzahl-Challenge"
+        "days" -> "Tage-Challenge"
+        else -> "Unbekannt"
+    }
+}
+
+

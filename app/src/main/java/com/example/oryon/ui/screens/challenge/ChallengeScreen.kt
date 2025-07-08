@@ -33,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.oryon.R
 import com.example.oryon.data.ChallengeData
+import com.example.oryon.data.getChallengeTypeText
 import com.example.oryon.ui.screens.activity.ActivityViewModel
 import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 
@@ -82,18 +83,12 @@ fun ChallengeList(challenges: List<ChallengeData>, navController: NavController)
                 title = challenge.name,
                 subtitle = challenge.type
             ) {
-                Text(text = "Typ: ${challenge.type}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = getChallengeTypeText(challenge.type), style = MaterialTheme.typography.bodyMedium)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 if (challenge.participants.size > 1) {
-                    Text(text = "Teilnehmer:", style = MaterialTheme.typography.bodySmall)
-                    challenge.participants.forEach { participant ->
-                        Text(
-                            text = "${participant.name ?: participant.uid}, ",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
+                    Text(text = "${challenge.participants.size} Teilnehmer", style = MaterialTheme.typography.bodySmall)
                 }else{
                     Text(text = "Solo Challenge", style = MaterialTheme.typography.bodySmall)
                 }
@@ -153,7 +148,7 @@ fun AddChallengeDialog(
                     onExpandedChange = { expanded = !expanded }
                 ) {
                     OutlinedTextField(
-                        value = type,
+                        value = getChallengeTypeText(type),
                         onValueChange = {  },
                         label = { Text("Challenge Typ") },
                         readOnly = true,
@@ -166,7 +161,7 @@ fun AddChallengeDialog(
                     ) {
                         options.forEach { selectionOption ->
                             DropdownMenuItem(
-                                text = { Text(selectionOption) },
+                                text = { Text(getChallengeTypeText(selectionOption)) },
                                 onClick = {
                                     type = selectionOption
                                     expanded = false
@@ -214,7 +209,7 @@ fun ChallengeCard(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        Column() {
+        Column(modifier = Modifier.background(Color(0xFF21211F))) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -240,10 +235,6 @@ fun ChallengeCard(
                         text = title,
                         style = MaterialTheme.typography.displayMedium.copy(color = Color.White)
                     )
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
-                    )
                 }
             }
 
@@ -253,5 +244,3 @@ fun ChallengeCard(
         }
     }
 }
-
-

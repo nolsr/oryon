@@ -54,6 +54,7 @@ import com.example.oryon.data.ChallengeData
 import com.example.oryon.data.ChallengeGoal
 import com.example.oryon.data.ChallengeParticipant
 import com.example.oryon.data.ParticipantRanking
+import com.example.oryon.data.getChallengeTypeText
 import com.example.oryon.ui.screens.challenge.ChallengeViewModel
 
 @Composable
@@ -129,7 +130,7 @@ fun ChallengeDetailTab(challenge: ChallengeData?, currentUser:ChallengeParticipa
                     }
                     if (challenge != null) {
                         Text(
-                            text = challenge.type,
+                            text = getChallengeTypeText(challenge.type),
                             style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
                         )
                     }
