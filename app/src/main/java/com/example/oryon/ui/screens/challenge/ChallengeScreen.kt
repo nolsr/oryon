@@ -86,12 +86,16 @@ fun ChallengeList(challenges: List<ChallengeData>, navController: NavController)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(text = "Teilnehmer:", style = MaterialTheme.typography.bodySmall)
-                challenge.participants.forEach { participant ->
-                    Text(
-                        text = "${participant.name ?: participant.uid}, ",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                if (challenge.participants.size > 1) {
+                    Text(text = "Teilnehmer:", style = MaterialTheme.typography.bodySmall)
+                    challenge.participants.forEach { participant ->
+                        Text(
+                            text = "${participant.name ?: participant.uid}, ",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }else{
+                    Text(text = "Solo Challenge", style = MaterialTheme.typography.bodySmall)
                 }
 
                 Row(
