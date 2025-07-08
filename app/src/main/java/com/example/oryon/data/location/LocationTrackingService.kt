@@ -90,7 +90,7 @@ class LocationTrackingService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Oryon - Lauf Tracking aktiv")
             .setContentText("Standort wird im Hintergrund erfasst")
-            .setSmallIcon(R.drawable.location) // dein Icon
+            .setSmallIcon(R.drawable.location)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()

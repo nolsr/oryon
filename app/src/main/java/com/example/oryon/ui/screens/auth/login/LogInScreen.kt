@@ -94,44 +94,6 @@ fun LoginScreen(
                 .align(Alignment.TopEnd)
                 .padding(16.dp)
         )
-
-// OLD HEADER DESIGN
-//        Box(modifier = Modifier
-//            .align(Alignment.Center)
-//            .padding( bottom = 96.dp)) {
-//            Column(
-//                verticalArrangement = Arrangement.spacedBy((-8).dp)
-//            ) {
-//                Text(
-//                    text = "START",
-//                    style = MaterialTheme.typography.headlineLarge,
-//                    color = darkColorScheme().onBackground,
-//                    fontWeight = FontWeight.Black,
-//                    fontStyle = FontStyle.Italic,
-//                    fontSize = 64.sp
-//                )
-//                Text(
-//                    text = "YOUR",
-//                    style = MaterialTheme.typography.headlineLarge,
-//                    color = darkColorScheme().onBackground,
-//                    fontWeight = FontWeight.Black,
-//                    fontStyle = FontStyle.Italic,
-//                    fontSize = 64.sp,
-//                    modifier = Modifier.padding(start = 120.dp)
-//                )
-//                Text(
-//                    text = "RUN",
-//                    style = MaterialTheme.typography.headlineLarge,
-//                    color = darkColorScheme().onBackground,
-//                    fontWeight = FontWeight.Black,
-//                    fontStyle = FontStyle.Italic,
-//                    fontSize = 64.sp,
-//                    modifier = Modifier.padding(start = 240.dp)
-//                )
-//            }
-//        }
-
-// NEW HEADER DESIGN
         Box(modifier = Modifier
             .align(Alignment.TopStart)
             .padding( 16.dp)) {
@@ -250,14 +212,6 @@ fun LoginScreen(
                     Text(it, color = Color.Red)
                 }
         }
-
     }
-
-
-
-
-
-
-
     }
 }

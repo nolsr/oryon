@@ -26,7 +26,6 @@ val navigationItems = listOf(
     Screen.Home,
     Screen.Activity,
     Screen.Challenge
-    // Füge hier weitere Screens aus Screen hinzu
 )
 
 @Composable
@@ -35,9 +34,7 @@ fun AppNavigationBar(
     items: List<Screen>
 ) {
     NavigationBar(
-        // Hier kannst du Modifier für die gesamte NavigationBar hinzufügen,
-        // z.B. containerColor, tonalElevation etc.
-        containerColor = MaterialTheme.colorScheme.surface, // Beispiel aus deinem Code
+        containerColor = MaterialTheme.colorScheme.surface,
         // tonalElevation = NavigationBarDefaults.TonalElevation // Standard Elevation
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -69,7 +66,6 @@ fun AppNavigationBar(
                     unselectedIconColor = MaterialTheme.colorScheme.onPrimary, //sets the color of the icon when the item is not selected
                     unselectedTextColor = MaterialTheme.colorScheme.onPrimary //sets the color of the text when the item is not selected
                 )
-                // Hier könntest du auch einen Modifier für jedes NavigationBarItem hinzufügen, falls nötig
             )
         }
     }

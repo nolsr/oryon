@@ -83,7 +83,7 @@ fun RunDetailScreen(runId: String, viewModel: ActivityViewModel, navController: 
                         Text(
                             text = "Laufdetails",
                             modifier = Modifier.padding(start = 8.dp),
-                            style = MaterialTheme.typography.displayLarge.copy(
+                            style = MaterialTheme.typography.displayMedium.copy(
                                 color = Color.White,
                                 fontSize = 32.sp
                             )
@@ -92,14 +92,14 @@ fun RunDetailScreen(runId: String, viewModel: ActivityViewModel, navController: 
                     Spacer(modifier = Modifier.height(86.dp))
                     Text(
                         text = date.toWeekday(),
-                        style = MaterialTheme.typography.displayLarge.copy(
+                        style = MaterialTheme.typography.displayMedium.copy(
                             color = Color.White,
                             fontSize = 32.sp
                         )
                     )
                     Text(
                         text = date.toDisplayString(),
-                        style = MaterialTheme.typography.displayLarge.copy(
+                        style = MaterialTheme.typography.displayMedium.copy(
                             color = Color.White,
                             fontSize = 32.sp
                         )
@@ -115,7 +115,7 @@ fun RunDetailScreen(runId: String, viewModel: ActivityViewModel, navController: 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "%.1f".format(session.distanceMeters / 1000f),
-                                style = MaterialTheme.typography.displayLarge.copy(
+                                style = MaterialTheme.typography.displayMedium.copy(
                                     color = Color(0xFFFF6F00), // Orange
                                     fontSize = 100.sp
                                 )
@@ -132,7 +132,7 @@ fun RunDetailScreen(runId: String, viewModel: ActivityViewModel, navController: 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "${session.durationSeconds / 60}",
-                                style = MaterialTheme.typography.displayLarge.copy(
+                                style = MaterialTheme.typography.displayMedium.copy(
                                     color = Color.White,
                                     fontSize = 100.sp
                                 )

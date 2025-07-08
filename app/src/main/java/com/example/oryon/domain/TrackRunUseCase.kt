@@ -66,6 +66,7 @@ class TrackRunUseCase(private val locationRepository: LocationRepository, privat
     fun stopTracking() {
         val distance = _distanceMeters.value
         val duration = _elapsedTimeSeconds.value
+        val routePoints = _routePoints.value
 
         val pace = if (distance > 0f) {
             (duration / 60f) / (distance / 1000f)
@@ -80,7 +81,8 @@ class TrackRunUseCase(private val locationRepository: LocationRepository, privat
                 firestoreRepository.saveRunSession(
                     distanceMeters = distance,
                     durationSec = duration,
-                    pace = pace
+                    pace = pace,
+                    routePoints = routePoints
                 )
 
                 firestoreRepository.updateChallengeProgressAfterRun(

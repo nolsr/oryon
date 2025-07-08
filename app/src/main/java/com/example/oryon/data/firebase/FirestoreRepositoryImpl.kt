@@ -1,5 +1,6 @@
 package com.example.oryon.data.firebase
 
+import android.location.Location
 import com.example.oryon.data.ChallengeData
 import com.example.oryon.data.ChallengeGoal
 import com.example.oryon.data.ChallengeParticipant
@@ -10,6 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import java.time.Instant
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.CoroutineScope
@@ -59,13 +61,17 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         return snapshot.documents.firstOrNull()?.toObject(UserData::class.java)
     }
 
-    override suspend fun saveRunSession(distanceMeters: Float, durationSec: Long, pace: Float) {
+    override suspend fun saveRunSession(distanceMeters: Float, durationSec: Long, pace: Float, routePoints: List<Location>) {
+        val geoPoints = routePoints.map { location ->
+            GeoPoint(location.latitude, location.longitude)
+        }
 
         val session = RunSession(
             date = Timestamp.now(),
             distanceMeters = distanceMeters,
             durationSeconds = durationSec,
-            pace = pace
+            pace = pace,
+            route = geoPoints
         )
 
         userRunsCollection()?.add(session)

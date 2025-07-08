@@ -90,8 +90,6 @@ fun HomeScreen( viewModel: HomeViewModel ) {
     var hasPermission by remember { mutableStateOf(false) }
     var healthPermissionGranted by remember { mutableStateOf(false) }
 
-
-    // Location permissions (fehlt hier, bitte dein LocationPermissionHandler einbinden)
     LocationPermissionHandler {
         hasPermission = true
     }

@@ -190,7 +190,7 @@ fun MemberTab(
                         Text(participant.name, style = MaterialTheme.typography.titleMedium)
                     }
 
-                    Text("${participant.progress} km", style = MaterialTheme.typography.titleMedium)
+                    Text("%.2f km".format(participant.progress), style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -393,7 +393,7 @@ fun TopRankingItem(
             maxLines = 1
         )
         Text(
-            text = "${participant.progress} km",
+            text = "%.2f km".format(participant.progress),
             style = MaterialTheme.typography.labelSmall
         )
     }
