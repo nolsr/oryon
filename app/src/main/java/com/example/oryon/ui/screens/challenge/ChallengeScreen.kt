@@ -14,22 +14,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -41,8 +39,33 @@ import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 @Composable
 fun ChallengeScreen( viewModel: ChallengeViewModel, navController: NavController) {
     val challenges by viewModel.challenges.collectAsState()
+    var showAddDialog by remember { mutableStateOf(false) }
 
-    ChallengeList(challenges, navController)
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ChallengeList(challenges, navController)
+
+        FloatingActionButton(
+            onClick = { showAddDialog = true },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Mitglied hinzufügen")
+        }
+
+        if (showAddDialog) {
+            AddChallengeDialog(
+                onDismiss = { showAddDialog = false },
+                onAdd = { name, type, target ->
+                    viewModel.addChallenge(name, type, target)
+                    showAddDialog = false
+                }
+            )
+        }
+    }
 }
 
 @Composable
@@ -97,29 +120,83 @@ fun ChallengeList(challenges: List<ChallengeData>, navController: NavController)
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class) // Required for ExposedDropdownMenuBox
 @Composable
-fun ChallengeCard(challenge: ChallengeData, onCardClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable { onCardClick() },
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = challenge.name, style = MaterialTheme.typography.titleLarge)
-            Text(text = "Typ: ${challenge.type}", style = MaterialTheme.typography.bodyMedium)
+fun AddChallengeDialog(
+    onDismiss: () -> Unit,
+    onAdd: (name: String, type: String, target: Float) -> Unit
+) {
+    var name by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf("distance") }
+    var target by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) } // State for dropdown menu
+    val options = listOf("distance", "duration", "runcount", "days")
 
-            Spacer(modifier = Modifier.height(8.dp))
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Neue Challenge hinzufügen") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Gruppen Name") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = "Teilnehmer:", style = MaterialTheme.typography.bodySmall)
-            challenge.participants.forEach { participant ->
-                Text(
-                    text = "- ${participant.name ?: participant.uid}",
-                    style = MaterialTheme.typography.bodySmall
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = type,
+                        onValueChange = {  },
+                        label = { Text("Challenge Typ") },
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier.menuAnchor() // Important for positioning
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        options.forEach { selectionOption ->
+                            DropdownMenuItem(
+                                text = { Text(selectionOption) },
+                                onClick = {
+                                    type = selectionOption
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = target,
+                    onValueChange = { target = it.filter { c -> c.isDigit() || c == '.' } },
+                    label = { Text("Challenge Ziel") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             }
+        },
+        confirmButton = {
+            Button(onClick = {
+                val targetFloat = target.toFloatOrNull() ?: 0f
+                onAdd(name, type, targetFloat)
+                onDismiss()
+            }) {
+                Text("Hinzufügen")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Abbrechen")
+            }
         }
-    }
+    )
 }
+
 
 @Composable
 fun ChallengeCard(

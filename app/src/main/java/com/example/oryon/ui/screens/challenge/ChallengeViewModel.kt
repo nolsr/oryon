@@ -44,6 +44,16 @@ class ChallengeViewModel(
         }
     }
 
+    fun addChallenge(name: String, type: String, target: Float) {
+        viewModelScope.launch {
+            val uid = authRepository.getUID() ?: return@launch
+            try {
+                firestoreRepository.addChallenge(name, type, target, uid)
+            } catch (e: Exception) {
+            }
+        }
+    }
+
     fun selectChallengeById(challengeId: String) {
         val challenge = _challenges.value.find { it.id == challengeId }
         _selectedChallenge.value = challenge

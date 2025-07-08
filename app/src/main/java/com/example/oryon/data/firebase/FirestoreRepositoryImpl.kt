@@ -96,6 +96,21 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         awaitClose { registration.remove() }
     }
 
+    override suspend fun addChallenge(name: String, type: String, target: Float, creatorUid: String) {
+        val challengeData = mapOf(
+            "name" to name,
+            "type" to type,
+            "data" to mapOf("target" to target),
+            "participantIds" to listOf(creatorUid),
+            "participants" to listOf(
+                mapOf("id" to creatorUid, "progress" to 0f)
+            )
+        )
+        firestore.collection("challenges")
+            .add(challengeData)
+            .await()
+    }
+
     override suspend fun getUserChallenges(): Flow<List<ChallengeData>> = callbackFlow {
         val uid = authRepository.getUID()
         if (uid == null) {
