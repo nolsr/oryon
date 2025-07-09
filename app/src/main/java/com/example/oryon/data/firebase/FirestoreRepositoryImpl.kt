@@ -23,6 +23,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Date
 
 
@@ -248,7 +250,6 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
                         is ChallengeGoal.Duration -> (durationSec / 60).toFloat()
                         is ChallengeGoal.RunCount -> 1f
                         is ChallengeGoal.Days -> {
-                            // Optional: Prüfen, ob der letzte Lauf an einem anderen Tag war
                             1f
                         }
                     }
