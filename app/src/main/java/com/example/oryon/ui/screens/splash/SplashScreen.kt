@@ -23,6 +23,8 @@ fun SplashScreen(
     navController: NavController,
     viewModel: SplashViewModel
 ) {
+
+    //Navigiert auf Screen von onAppStart Funktion
     val openAndPopUp: (String, String) -> Unit = { target, from ->
         navController.navigate(target) {
             popUpTo(from) { inclusive = true }

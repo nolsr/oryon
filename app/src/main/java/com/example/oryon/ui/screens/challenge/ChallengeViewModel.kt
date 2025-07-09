@@ -36,6 +36,7 @@ class ChallengeViewModel(
     fun getCurrentUserId() = _currentUserId
 
 
+    // Initialisiere Challenges
     init {
         viewModelScope.launch {
             firestoreRepository.getUserChallenges()
@@ -44,6 +45,7 @@ class ChallengeViewModel(
         }
     }
 
+    // neue Challenge erstellen
     fun addChallenge(name: String, type: String, target: Float) {
         viewModelScope.launch {
             val uid = authRepository.getUID() ?: return@launch
@@ -54,6 +56,7 @@ class ChallengeViewModel(
         }
     }
 
+    // Challenge mit ID suchen und in viewModel in selectedChallenge speichern
     fun selectChallengeById(challengeId: String) {
         val challenge = _challenges.value.find { it.id == challengeId }
         _selectedChallenge.value = challenge
@@ -75,6 +78,7 @@ class ChallengeViewModel(
         }
     }
 
+    // Schaut um welchen Challenge Typ es sich handelt
     fun parseGoal(type: String, data: Map<String, Any>): ChallengeGoal? {
         return when (type) {
             "distance" -> ChallengeGoal.Distance((data["target"] as? Number)?.toFloat() ?: return null)
@@ -85,6 +89,7 @@ class ChallengeViewModel(
         }
     }
 
+    // Berechnet Fortschritt des Nutzers
     fun getProgressPercentage(participant: ChallengeParticipant, goal: ChallengeGoal): Float {
         return when (goal) {
             is ChallengeGoal.Distance -> (participant.progress / goal.targetKm).coerceIn(0f, 1f)
@@ -94,6 +99,8 @@ class ChallengeViewModel(
         }
     }
 
+    // Sortiert Nutzer nach Fortschritt inerhalb der Challenge
+    // und speichert die Daten in ParticipantRanking aus dem Model
     fun getCurrentChallengeRanking(): List<ParticipantRanking> {
         val challenge = _selectedChallenge.value ?: return emptyList()
         return challenge.participants
@@ -106,20 +113,21 @@ class ChallengeViewModel(
             }
     }
 
+    // Fügt Nutzer zur Challenge hinzu
+    //Ruft die Methode aus FirestoreRepository auf
     fun addParticipantByEmail(challengeId: String, email: String) {
         viewModelScope.launch {
             val user = firestoreRepository.findUserByEmail(email)
             if (user != null) {
                 firestoreRepository.addUserToChallenge(challengeId, user.id)
             } else {
-                // Fehlerbehandlung: Nutzer nicht gefunden
             }
         }
     }
 
 }
 
-
+//Juhu eine weitere Factory für das ViewModel
 class ChallengeViewModelFactory(
     private val firestoreRepository: FirestoreRepository,
     private val authRepository: AuthRepository

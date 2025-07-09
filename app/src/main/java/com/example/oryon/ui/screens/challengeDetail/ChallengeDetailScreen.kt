@@ -55,21 +55,28 @@ import com.example.oryon.data.ChallengeGoal
 import com.example.oryon.data.ChallengeParticipant
 import com.example.oryon.data.ParticipantRanking
 import com.example.oryon.data.getChallengeTypeText
+import com.example.oryon.data.getUnitLabel
+import com.example.oryon.data.getUnitShort
 import com.example.oryon.ui.screens.challenge.ChallengeViewModel
 
 @Composable
 fun ChallengeDetailScreen( challengeId: String, viewModel: ChallengeViewModel) {
     val challenges by viewModel.challenges.collectAsState()
+
+    //Einzelene Challenge mit ID suchen und in viewModel speichern
     LaunchedEffect(challenges, challengeId) {
         if (challenges.isNotEmpty()) {
             viewModel.selectChallengeById(challengeId)
         }
     }
+
+    //Challenge relevante Daten
     val challenge by viewModel.selectedChallenge.collectAsState()
     val currentUser = challenge?.participants?.find { it.uid == viewModel.getCurrentUserId() }
     val ranking = remember(challenge) { viewModel.getCurrentChallengeRanking() }
     val progress by viewModel.userProgress.collectAsState()
 
+    //State für den Tab
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabTitles = listOf("Challenge", "Mitglieder")
 
@@ -86,7 +93,7 @@ fun ChallengeDetailScreen( challengeId: String, viewModel: ChallengeViewModel) {
 
         when (selectedTabIndex) {
             0 -> ChallengeDetailTab(challenge, currentUser, progress, ranking)
-            1 -> MemberTab(ranking, challengeId, viewModel)
+            1 -> MemberTab(ranking, challenge, viewModel)
         }
     }
 }
@@ -95,6 +102,8 @@ fun ChallengeDetailScreen( challengeId: String, viewModel: ChallengeViewModel) {
 fun ChallengeDetailTab(challenge: ChallengeData?, currentUser:ChallengeParticipant?, progress: Float?, ranking: List<ParticipantRanking>) {
     val progressKm = currentUser?.progress ?: 0f
     val targetKm = (challenge?.goal as? ChallengeGoal.Distance)?.targetKm ?: 0f
+    val unit = challenge?.goal?.getUnitLabel(progressKm)
+    val shortUnit = challenge?.goal?.getUnitShort()
 
     LazyColumn {
 
@@ -143,14 +152,17 @@ fun ChallengeDetailTab(challenge: ChallengeData?, currentUser:ChallengeParticipa
 
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Deine Challenge-Statistik:")
-                if (progress != null && challenge != null) {
-                    TextCard((progress * 100), progressKm.toInt(), targetKm.toInt())
+                Spacer(modifier = Modifier.height(12.dp))
+                if (progress != null && challenge != null && shortUnit != null && unit != null) {
+                    TextCard((progress * 100), progressKm.toInt(), targetKm.toInt(), shortUnit, unit)
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(38.dp))
 
-                Text("Top 3")
-                TopThreeRanking(ranking)
+                if (ranking.size >= 3 ) {
+                    Text("Top 3")
+                    TopThreeRanking(ranking)
+                }
             }
         }
     }
@@ -159,10 +171,11 @@ fun ChallengeDetailTab(challenge: ChallengeData?, currentUser:ChallengeParticipa
 @Composable
 fun MemberTab(
     ranking: List<ParticipantRanking>,
-    challengeId: String,
-    viewModel: ChallengeViewModel
+    challenge: ChallengeData?,
+    viewModel: ChallengeViewModel,
 ) {
     var showDialog by remember { mutableStateOf(false) }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -172,6 +185,7 @@ fun MemberTab(
                 .padding(16.dp)
         ) {
             itemsIndexed(ranking) { index, participant ->
+                val unit = challenge?.goal?.getUnitLabel(participant.progress)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -191,7 +205,7 @@ fun MemberTab(
                         Text(participant.name, style = MaterialTheme.typography.titleMedium)
                     }
 
-                    Text("%.2f km".format(participant.progress), style = MaterialTheme.typography.titleMedium)
+                    Text("${participant.progress.toInt()} $unit", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -211,7 +225,7 @@ fun MemberTab(
             AddParticipantDialog(
                 onDismiss = { showDialog = false },
                 onAdd = { email ->
-                    viewModel.addParticipantByEmail(challengeId, email)
+                    challenge?.id?.let { viewModel.addParticipantByEmail(it, email) }
                     showDialog = false
                 }
             )
@@ -259,7 +273,7 @@ fun AddParticipantDialog(
 
 
 @Composable
-fun TextCard(prozent: Float, progress: Int, goal: Int){
+fun TextCard(prozent: Float, progress: Int, goal: Int, shortUnit: String, unit:String){
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -288,12 +302,12 @@ fun TextCard(prozent: Float, progress: Int, goal: Int){
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "${progress}KM",
+                    text = "${progress} $shortUnit",
                     style = MaterialTheme.typography.displayMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "von ${goal}KM",
+                    text = "von ${goal} $unit",
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -336,7 +350,6 @@ fun ChallengeProgressIndicator(progress: Float) {
 @Composable
 fun TopThreeRanking(ranking: List<ParticipantRanking>) {
     val topThree = ranking.take(3)
-    if (topThree.size < 3) return
 
     Row(
         modifier = Modifier
@@ -376,6 +389,7 @@ fun TopRankingItem(
     imageSize: Dp,
     offsetY: Dp
 ) {
+    if (rank > 3) return
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.offset(y = offsetY)

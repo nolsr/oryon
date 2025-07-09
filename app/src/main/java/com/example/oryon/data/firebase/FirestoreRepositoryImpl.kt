@@ -145,7 +145,7 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
                         val goal = parseGoal(type, data) ?: return@mapNotNull null
 
                         val participantIds = doc.get("participantIds") as? List<String> ?: emptyList()
-                        val userArray = doc.get("user") as? List<Map<String, Any>> ?: emptyList()
+                        val userArray = doc.get("participants") as? List<Map<String, Any>> ?: emptyList()
 
                         val participants = coroutineScope {
                             participantIds.map { uid ->
@@ -233,7 +233,7 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         for (doc in challengeDocs.documents) {
             val type = doc.getString("type") ?: continue
             val data = doc.get("data") as? Map<String, Any> ?: continue
-            val participants = doc.get("user") as? List<Map<String, Any>> ?: continue
+            val participants = doc.get("participants") as? List<Map<String, Any>> ?: continue
 
             val goal = parseGoal(type, data) ?: continue
 
@@ -265,7 +265,7 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
 
             firestore.collection("challenges")
                 .document(doc.id)
-                .update("user", updatedParticipants)
+                .update("participants", updatedParticipants)
 
             println("Updated participants: $updatedParticipants")
 

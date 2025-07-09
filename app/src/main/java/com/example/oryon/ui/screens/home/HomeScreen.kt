@@ -49,54 +49,13 @@ import com.mapbox.maps.extension.compose.style.MapStyle
 @Composable
 fun HomeScreen( viewModel: HomeViewModel ) {
 
-
-    /* Debugging
-
-    if (liveLocation != null) {
-                Text("Live-Position: ${liveLocation!!.latitude}, ${liveLocation!!.longitude}")
-            }
-
-            Button(onClick = {
-                if (isTracking) {
-                    viewModel.stopTracking()
-                    context.stopService(Intent(context, LocationTrackingService::class.java))
-                } else {
-                    ContextCompat.startForegroundService(
-                        context,
-                        Intent(context, LocationTrackingService::class.java)
-                    )
-                    viewModel.startTracking()
-                }
-                isTracking = !isTracking
-            }) {
-                Text(if (isTracking) "Stop Tracking" else "Start Tracking")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (currentLocation != null) {
-                Text("Aktuelle Position: ${currentLocation!!.latitude}, ${currentLocation!!.longitude}")
-                Text("Distanz: ${"%.2f".format(distance / 1000)} km")
-                Text("Punkte: ${route.size}")
-            } else {
-                Text("Warte auf Standortdaten...")
-            }
-
-
-     */
-
-
     val context = LocalContext.current
     var hasPermission by remember { mutableStateOf(false) }
-    var healthPermissionGranted by remember { mutableStateOf(false) }
 
+    //Permission für Location Traking mit Forground Service
     LocationPermissionHandler {
         hasPermission = true
     }
-
-    //HealthPermissionHandler {
-    //    healthPermissionGranted = true
-    //}
 
     LaunchedEffect(hasPermission) {
         if (hasPermission) {
@@ -105,7 +64,6 @@ fun HomeScreen( viewModel: HomeViewModel ) {
         }
     }
 
-    // States aus ViewModel
     val location by viewModel.currentLocation.collectAsState()
     val routePoints by viewModel.routePoints.collectAsState()
     val distance by viewModel.distanceMeters.collectAsState()
@@ -117,6 +75,7 @@ fun HomeScreen( viewModel: HomeViewModel ) {
     val viewportState = rememberMapViewportState()
     val markerIcon = rememberIconImage(key = "marker", painter = painterResource(R.drawable.location))
 
+    //Merken für Zoom und Kamera auf der Mapbox Karte
     LaunchedEffect(location) {
         if (hasPermission && location != null) {
             viewportState.flyTo(
@@ -150,6 +109,7 @@ fun HomeScreen( viewModel: HomeViewModel ) {
 
         Box(modifier = Modifier.fillMaxSize()){
             // Karte
+            //Mapbox Karte von https://docs.mapbox.com/android/maps/guides/install/
             MapboxMap(
                 modifier = Modifier.fillMaxSize(),
                 mapViewportState = viewportState,
@@ -174,6 +134,7 @@ fun HomeScreen( viewModel: HomeViewModel ) {
                 }
             }
 
+            //Buton für Start des Trakings
             if (!isTracking) {
                 Button(
                     onClick = { viewModel.startTracking() },
@@ -189,6 +150,7 @@ fun HomeScreen( viewModel: HomeViewModel ) {
                 }
             }
 
+            //Buton für Stop und Pause des Trakings
             if (isTracking){
                 Row(modifier = Modifier
                     .fillMaxWidth()

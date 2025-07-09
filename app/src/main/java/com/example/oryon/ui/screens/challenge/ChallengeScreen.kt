@@ -40,8 +40,9 @@ import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 @Composable
 fun ChallengeScreen( viewModel: ChallengeViewModel, navController: NavController) {
     val challenges by viewModel.challenges.collectAsState()
-    var showAddDialog by remember { mutableStateOf(false) }
 
+    //State ob Dialog angezeigt wird oder nicht
+    var showAddDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         ChallengeList(challenges, navController)

@@ -34,6 +34,7 @@ class HomeViewModel(
     private val _isPaused = MutableStateFlow(false)
     val isPaused: StateFlow<Boolean> = _isPaused
 
+    // Holt den Standort des Nutzers und speichert ihn in _currentLocation
     init {
         viewModelScope.launch {
             locationRepository.getLocationUpdates()
@@ -43,6 +44,7 @@ class HomeViewModel(
         }
     }
 
+    //Funktionen kommen aus dem TrackRunUseCase
     fun startTracking() {
         if (_isTracking.value) return
         _isTracking.value = true

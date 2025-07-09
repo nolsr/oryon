@@ -60,16 +60,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+//App Entry mit Scaffold und Navigation
 @Composable
 fun MainApp() {
-    val navController = rememberNavController() // NavController erstellen
+    val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     val authRepository = remember { AuthRepositoryImpl() }
 
 
+    // Liste wo auf welchen Seiten Bottom Bar zu sehen ist
     val bottomBarScreens = listOf(
         Screen.Home.route,
         Screen.Activity.route,
@@ -78,15 +79,12 @@ fun MainApp() {
         "challengeDetail/{challengeId}"
     )
 
+    // Liste wo auf welchen Seiten Top Bar zu sehen ist
     val topBarScreens = listOf(
         Screen.Home.route,
         Screen.Activity.route,
         Screen.Challenge.route,
         "challengeDetail/{challengeId}"
-    )
-
-    val actionBtnScreens = listOf(
-        Screen.Challenge.route
     )
 
     Scaffold(
@@ -115,7 +113,6 @@ fun MainApp() {
             }
         }
     ) { innerPadding ->
-        // NavHost zum Anzeigen der Screens
         NavHost(
             navController = navController,
             startDestination = "splash",
@@ -180,7 +177,6 @@ fun MainApp() {
     }
 }
 
-// Preview für MainApp (optional, aber hilfreich)
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
