@@ -14,6 +14,8 @@ class LogInViewModel(
     val isLoading = MutableStateFlow(false)
     val errorMessage = MutableStateFlow<String?>(null)
 
+    //Login Func von AuthRepository
+    //Loading Variable für Loading Animation
     suspend fun login() {
         isLoading.value = true
         errorMessage.value = null

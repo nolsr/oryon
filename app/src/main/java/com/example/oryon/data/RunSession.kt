@@ -5,6 +5,10 @@ import com.google.firebase.firestore.GeoPoint
 import java.util.Date
 import kotlin.time.Duration
 
+/*
+Alle Daten und Klassen die für das Speichern und verändern der Läufe benötigt werden
+ */
+
 data class RunSession(
     val id: String = "",
     val date: Timestamp = Timestamp(Date(0)),

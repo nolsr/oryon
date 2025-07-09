@@ -21,14 +21,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
+// Service um den LiveStandort zu erhalten
+// Inspiration der Umsetzung durch: https://www.youtube.com/watch?v=Jj14sw4Yxk0
 class LocationTrackingService : Service() {
 
     companion object {
         const val CHANNEL_ID = "location_tracking_channel"
         const val NOTIFICATION_ID = 123456
+        //Flow um den Standort zu erhalten speichert die Letzte Positon im Flow
         val locationUpdatesFlow = MutableSharedFlow<Location>(replay = 1)
     }
 
+    //Nutzt die FusedLocationAPI um den Standort zu erhalten
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
@@ -36,16 +40,20 @@ class LocationTrackingService : Service() {
     override fun onCreate() {
         super.onCreate()
 
+        //erstellt einen Channel um den Standort zu erhalten
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        //Startet den Forground Service
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, createNotification())
 
+        //erstellt eine LocationRequest um den Standort zu erhalten
         locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000L)
             .setMinUpdateIntervalMillis(1000L)
             .setMaxUpdateDelayMillis(3000L)
             .build()
 
+        //neue Positon wird in Flow gespeichert
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 result.lastLocation?.let { location ->

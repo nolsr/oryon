@@ -1,5 +1,9 @@
 package com.example.oryon.data
 
+/*
+Alle Daten und Klassen die für die Challenge benötigt werden
+ */
+
 data class ChallengeData(
     val id: String,
     val name: String,

@@ -4,11 +4,10 @@ import com.example.oryon.data.location.LocationRepository
 import android.location.Location
 import android.util.Log
 import com.example.oryon.data.firebase.FirestoreRepository
-import com.example.oryon.data.health.HealthRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.*
 
-
+//Use Case für die Tracking Funktion fürs Laufen der App
 class TrackRunUseCase(private val locationRepository: LocationRepository, private val firestoreRepository: FirestoreRepository) {
 
     private val _routePoints = MutableStateFlow<List<Location>>(emptyList())
@@ -27,6 +26,9 @@ class TrackRunUseCase(private val locationRepository: LocationRepository, privat
     private var startTimeMillis: Long = 0L
     private var endTimeMillis: Long = 0L
 
+    //startet die Tracking Funktion und Timer
+    //Speichert den Fluss an neuen Positionen in _routePoints Liste
+    //Berechnet die Gesamtdistanz
     fun startTracking(): Flow<Location> {
         startTimeMillis = System.currentTimeMillis()
         startTimer()
@@ -44,6 +46,7 @@ class TrackRunUseCase(private val locationRepository: LocationRepository, privat
         return locationRepository.getLocationUpdates()
     }
 
+    //Startet den Timer
     private fun startTimer() {
         timerJob = scope.launch {
             while (true) {
@@ -63,11 +66,13 @@ class TrackRunUseCase(private val locationRepository: LocationRepository, privat
         isPaused = false
     }
 
+    //Stopt das Traking und speichert die Daten in Firestore
     fun stopTracking() {
         val distance = _distanceMeters.value
         val duration = _elapsedTimeSeconds.value
         val routePoints = _routePoints.value
 
+        //Berechnet die Pace
         val pace = if (distance > 0f) {
             (duration / 60f) / (distance / 1000f)
         } else {
@@ -76,6 +81,7 @@ class TrackRunUseCase(private val locationRepository: LocationRepository, privat
 
         println("Tracking gestoppt: $distance Meter, $duration Sekunden")
 
+        //Speichert die Daten in Firestore
         scope.launch {
             try {
                 firestoreRepository.saveRunSession(
@@ -97,6 +103,8 @@ class TrackRunUseCase(private val locationRepository: LocationRepository, privat
             }
         }
 
+        //Stoppt den Timer und tracking Job
+        //Setzt die Werte zurück
         trackingJob?.cancel()
         timerJob?.cancel()
         _routePoints.value = emptyList()
@@ -104,14 +112,18 @@ class TrackRunUseCase(private val locationRepository: LocationRepository, privat
         _elapsedTimeSeconds.value = 0
     }
 
+    // Berechnet die Gesamtdistanz anhand der Liste von Positionen
     private fun calculateDistance(points: List<Location>): Float {
         var distance = 0f
         for (i in 1 until points.size) {
+            //nutzt Androids loaction Klasse um die Distanz zwischen den Positionen zu berechnen
+            //Distanz dabei in Meter
             distance += points[i].distanceTo(points[i - 1])
         }
         return distance
     }
 
+    //Berechnet die Pace in Minuten pro Kilometer für das viewModel
     val paceMinutesPerKm: Flow<Float?> = combine(
         _elapsedTimeSeconds,
         _distanceMeters

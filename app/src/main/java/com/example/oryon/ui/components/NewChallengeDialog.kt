@@ -39,7 +39,7 @@ fun NewChallengeDialog(
         onDismissRequest = onDismissRequest,
         title = { Text("Neue Challenge erstellen") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) { // Etwas mehr Abstand
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
                     value = title,
                     onValueChange = onTitleChange,
@@ -53,7 +53,7 @@ fun NewChallengeDialog(
                     label = { Text("Beschreibung") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(100.dp) // Mehrzeilig
+                        .height(100.dp)
                 )
 
                 // Dropdown für Kategorie
@@ -62,9 +62,10 @@ fun NewChallengeDialog(
                     onExpandedChange = { expandedDropdown = !expandedDropdown },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    OutlinedTextField( // Sieht aus wie ein TextField, dient aber als Anker für das Dropdown-Menü
+                    // Sieht aus wie ein TextField, dient aber als Anker für das Dropdown-Menü
+                    OutlinedTextField(
                         value = selectedCategory,
-                        onValueChange = {}, // Keine direkte Eingabe hier
+                        onValueChange = {},
                         readOnly = true,
                         label = { Text("Kategorie") },
                         trailingIcon = {
@@ -72,7 +73,7 @@ fun NewChallengeDialog(
                         },
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                         modifier = Modifier
-                            .menuAnchor() // Wichtig, um das Menü an dieses Feld zu binden
+                            .menuAnchor()
                             .fillMaxWidth()
                     )
                     ExposedDropdownMenu(

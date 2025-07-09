@@ -16,6 +16,7 @@ import com.example.oryon.R
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavDestination.Companion.hierarchy
 
+//Alle Routen die die NavigationBar beinhalten
 sealed class Screen(val route: String, val label: String, @DrawableRes val iconResId: Int) {
     object Home : Screen("home", "Home", R.drawable.lucide_map)
     object Activity : Screen("activity", "Aktivität", R.drawable.lucide_route)
@@ -28,6 +29,7 @@ val navigationItems = listOf(
     Screen.Challenge
 )
 
+//NavigationBar mit den Routen die die NavigationBar beinhalten wird im MainApp verwendet
 @Composable
 fun AppNavigationBar(
     navController: NavController,
@@ -35,7 +37,6 @@ fun AppNavigationBar(
 ) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
-        // tonalElevation = NavigationBarDefaults.TonalElevation // Standard Elevation
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination

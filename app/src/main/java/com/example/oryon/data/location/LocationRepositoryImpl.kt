@@ -15,48 +15,8 @@ import kotlinx.coroutines.flow.Flow
 
 class LocationRepositoryImpl() : LocationRepository {
 
+    //Ruft lediglich die LocationUpdate Func des Services auf
     override fun getLocationUpdates(): Flow<Location> = LocationTrackingService.locationUpdatesFlow
 
-    /*
-    private val fusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(context)
-
-    @SuppressLint("MissingPermission")
-    override fun getLocationUpdates(): Flow<Location> = callbackFlow {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            close(SecurityException("Location permission not granted"))
-            return@callbackFlow
-        }
-
-        val locationRequest = LocationRequest.create().apply {
-            interval = 5000
-            fastestInterval = 2000
-            priority = Priority.PRIORITY_HIGH_ACCURACY
-        }
-
-        val locationCallback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let {
-                    println("LOCATION: ${it.latitude}, ${it.longitude}")
-                    trySend(it).isSuccess
-                }
-            }
-        }
-
-        fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
-
-        awaitClose {
-            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-        }
-    }
-    */
 }
 

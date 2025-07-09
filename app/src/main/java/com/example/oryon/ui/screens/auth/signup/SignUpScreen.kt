@@ -67,6 +67,7 @@ fun SignUpScreen(
                 .graphicsLayer { scaleX = -1f }
         )
 
+        //Logo
         Text(
             text = "ORYON",
             style = MaterialTheme.typography.headlineLarge,
@@ -78,6 +79,7 @@ fun SignUpScreen(
                 .padding(16.dp)
         )
 
+        //Slogen
         Box(modifier = Modifier
             .align(Alignment.TopStart)
             .padding( 16.dp)) {
@@ -108,6 +110,7 @@ fun SignUpScreen(
             }
         }
 
+        //SignUp Felder
         Box(
             modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp).background(color = Color.Black.copy(alpha = 0.8f),  shape = RoundedCornerShape(16.dp)).padding(24.dp).height(337.dp)
         ){

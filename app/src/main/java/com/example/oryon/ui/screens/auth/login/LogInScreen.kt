@@ -84,6 +84,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxSize().graphicsLayer { scaleX=-1f }
         )
 
+        //Logo
         Text(
             text = "ORYON",
             style = MaterialTheme.typography.headlineLarge,
@@ -94,6 +95,8 @@ fun LoginScreen(
                 .align(Alignment.TopEnd)
                 .padding(16.dp)
         )
+
+        //Title Slogen
         Box(modifier = Modifier
             .align(Alignment.TopStart)
             .padding( 16.dp)) {
@@ -124,7 +127,7 @@ fun LoginScreen(
             }
         }
 
-
+        //Login Felder
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -167,8 +170,6 @@ fun LoginScreen(
                 )
 
                 Spacer(Modifier.height(24.dp))
-
-
 
                 Row(modifier = Modifier
                     .fillMaxSize(),

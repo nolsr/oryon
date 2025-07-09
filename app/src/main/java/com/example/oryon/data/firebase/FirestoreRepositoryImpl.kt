@@ -30,19 +30,14 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
 
     private val firestore = FirebaseFirestore.getInstance()
     private val usersCollection = firestore.collection("users")
+    private val challengeCollection = firestore.collection("challenges")
 
-    private fun userRunsCollection(): CollectionReference? {
-        val userId = authRepository.getUID()
-        return if (userId != null)
-            usersCollection.document(userId).collection("runs")
-        else null
-    }
-
+    //Fügt weitere dem User zugehörig Daten in Firestore hinzu
     override suspend fun createUser(user: UserData) {
         usersCollection.document(user.id).set(user).await()
-
     }
 
+    //Sucht den User anhand seiner UID
     override suspend fun getUserById(id: String): UserData? {
         return try {
             val snapshot = usersCollection.document(id).get().await()
@@ -52,6 +47,7 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         }
     }
 
+    //Sucht den User anhand seiner Email
     override suspend fun findUserByEmail(email: String): UserData? {
         val snapshot = firestore.collection("users")
             .whereEqualTo("email", email)
@@ -61,7 +57,9 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         return snapshot.documents.firstOrNull()?.toObject(UserData::class.java)
     }
 
+    //Speichert einen Lauf in Firestore
     override suspend fun saveRunSession(distanceMeters: Float, durationSec: Long, pace: Float, routePoints: List<Location>) {
+        //Wandelt Android.Location in Firebase.GeoPoints um
         val geoPoints = routePoints.map { location ->
             GeoPoint(location.latitude, location.longitude)
         }
@@ -77,12 +75,14 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         userRunsCollection()?.add(session)
     }
 
+    //Sucht alle Läufe eines Benutzers in Firestore
     override suspend fun getAllRunSessionsForUser(userId: String): Flow<List<RunSession>> = callbackFlow {
-        val collectionRef = firestore.collection("users")
+        val collectionRef = usersCollection
             .document(userId)
             .collection("runs")
             .orderBy("date", Query.Direction.DESCENDING)
 
+        //Fügt einen EventListener hinzu um die Daten zu aktualisieren
         val registration: ListenerRegistration = collectionRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 close(error)
@@ -102,6 +102,7 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         awaitClose { registration.remove() }
     }
 
+    //Fügt Challenge in Firestore hinzu
     override suspend fun addChallenge(name: String, type: String, target: Float, creatorUid: String) {
         val challengeData = mapOf(
             "name" to name,
@@ -112,11 +113,12 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
                 mapOf("id" to creatorUid, "progress" to 0f)
             )
         )
-        firestore.collection("challenges")
+        challengeCollection
             .add(challengeData)
             .await()
     }
 
+    //Sucht alle Challenge eines Benutzers in Firestore und gibt sie als Flow zurück
     override suspend fun getUserChallenges(): Flow<List<ChallengeData>> = callbackFlow {
         val uid = authRepository.getUID()
         if (uid == null) {
@@ -124,9 +126,11 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
             return@callbackFlow
         }
 
-        val query = firestore.collection("challenges")
-            .whereArrayContains("participantIds", uid)
+        //Sucht alle Challenge die dem User gehören
+        val query = challengeCollection.whereArrayContains("participantIds", uid)
 
+        //Bekommt die Daten der Challenge
+        //Fügt einen EventListener hinzu um die Daten zu aktualisieren
         val registration = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 close(error)
@@ -136,6 +140,7 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
             if (snapshot != null) {
                 val documents = snapshot.documents
 
+                //Verarbeitet die Daten und gibt sie als Flow zurück
                 launch {
                     val challenges = documents.mapNotNull { doc ->
                         val id = doc.id
@@ -150,6 +155,7 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
                         val participants = coroutineScope {
                             participantIds.map { uid ->
                                 async {
+                                    //Sucht die UserDaten anhand der UID in Firestore
                                     val userData = userArray.find { it["id"] == uid }
                                     val progress = (userData?.get("progress") as? Number)?.toFloat() ?: 0f
 
@@ -188,20 +194,23 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         awaitClose { registration.remove() }
     }
 
+    //Fügt den User zu einer Challenge hinzu
     override suspend fun addUserToChallenge(challengeId: String, userId: String) {
-        val challengeRef = firestore.collection("challenges").document(challengeId)
+        val challengeRef = challengeCollection.document(challengeId)
 
         firestore.runTransaction { transaction ->
             val snapshot = transaction.get(challengeRef)
             val currentIds = snapshot.get("participantIds") as? List<String> ?: emptyList()
             val updatedIds = currentIds + userId
 
+            //Updated Challenge Daten mit neuem User
             val currentParticipants = snapshot.get("participants") as? List<Map<String, Any>> ?: emptyList()
             val updatedParticipants = currentParticipants + mapOf(
                 "uid" to userId,
                 "progress" to 0f
             )
 
+            //Updatet Challenge mit neuem User in Firestore
             transaction.update(challengeRef, mapOf(
                 "participantIds" to updatedIds.distinct(),
                 "participants" to updatedParticipants
@@ -209,38 +218,30 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
         }
     }
 
-    private fun parseGoal(type: String, data: Map<String, Any>): ChallengeGoal? {
-        return when (type) {
-            "distance" -> ChallengeGoal.Distance((data["target"] as? Number)?.toFloat() ?: return null)
-            "duration" -> ChallengeGoal.Duration((data["target"] as? Number)?.toInt() ?: return null)
-            "runcount" -> ChallengeGoal.RunCount((data["target"] as? Number)?.toInt() ?: return null)
-            "days" -> ChallengeGoal.Days((data["target"] as? Number)?.toInt() ?: return null)
-            else -> null
-        }
-    }
-
+    //Ändert den Fortschritt einer Challenge
+    //Wird von TrackRunUseCase aufgerufen
     override suspend fun updateChallengeProgressAfterRun(distanceMeters: Float, durationSec: Long) {
-        println("updateChallengeProgressAfterRun called")
         val uid = authRepository.getUID() ?: return
 
-        val challengeDocs = firestore.collection("challenges")
+        //Fetcht alle Challenge die dem User gehören
+        val challengeDocs = challengeCollection
             .whereArrayContains("participantIds", uid)
             .get()
             .await()
-
-        println("Challenge documents: ${challengeDocs.documents}")
 
         for (doc in challengeDocs.documents) {
             val type = doc.getString("type") ?: continue
             val data = doc.get("data") as? Map<String, Any> ?: continue
             val participants = doc.get("participants") as? List<Map<String, Any>> ?: continue
 
+            //Verareitet Daten mit Helpferfunktion je nach ChallengeTyp
             val goal = parseGoal(type, data) ?: continue
 
             val updatedParticipants = participants.map { participant ->
                 val participantId = participant["id"] as? String ?: return@map participant
                 val existingProgress = (participant["progress"] as? Number)?.toFloat() ?: 0f
 
+                //Berechnet den neuen Fortschritt je nach ChallengeTyp
                 val updatedProgress = if (participantId == uid) {
                     existingProgress + when (goal) {
                         is ChallengeGoal.Distance -> (distanceMeters / 1000)
@@ -255,21 +256,34 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
                     existingProgress
                 }
 
-                println("Participant ID: $participantId, Existing Progress: $existingProgress, Updated Progress: $updatedProgress")
-
                 mapOf(
                     "id" to participantId,
                     "progress" to updatedProgress
                 )
             }
 
-            firestore.collection("challenges")
-                .document(doc.id)
-                .update("participants", updatedParticipants)
-
-            println("Updated participants: $updatedParticipants")
-
+            //Speichert die neuen Daten in Firestore
+            challengeCollection.document(doc.id).update("participants", updatedParticipants)
         }
+    }
+
+    //Hilfsfunktion um Daten zu parsen
+    private fun parseGoal(type: String, data: Map<String, Any>): ChallengeGoal? {
+        return when (type) {
+            "distance" -> ChallengeGoal.Distance((data["target"] as? Number)?.toFloat() ?: return null)
+            "duration" -> ChallengeGoal.Duration((data["target"] as? Number)?.toInt() ?: return null)
+            "runcount" -> ChallengeGoal.RunCount((data["target"] as? Number)?.toInt() ?: return null)
+            "days" -> ChallengeGoal.Days((data["target"] as? Number)?.toInt() ?: return null)
+            else -> null
+        }
+    }
+
+    //Hilfsfunktion um die RunCollection von User zu erhalten, die mit ihm verschachtelt ist
+    private fun userRunsCollection(): CollectionReference? {
+        val userId = authRepository.getUID()
+        return if (userId != null)
+            usersCollection.document(userId).collection("runs")
+        else null
     }
 
 }

@@ -37,6 +37,7 @@ fun OryonTopAppBar(
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
 
+    // Top Bar mit logout Funktion wird im Scaffold verwendet
     TopAppBar(
         title = { Text(text, style = MaterialTheme.typography.displayLarge, fontFamily = FiraSansFontFamily,) },
         actions = {

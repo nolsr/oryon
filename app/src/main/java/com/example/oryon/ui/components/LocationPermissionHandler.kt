@@ -15,6 +15,7 @@ fun LocationPermissionHandler(
 ) {
     val context = LocalContext.current
 
+    // State für Positions permissions
     var fineGranted by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -23,6 +24,7 @@ fun LocationPermissionHandler(
         )
     }
 
+    // State für Background Position permissions
     var backgroundGranted by remember {
         mutableStateOf(
             Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || ContextCompat.checkSelfPermission(
@@ -31,6 +33,7 @@ fun LocationPermissionHandler(
         )
     }
 
+    // Launcher für permissions
     val finePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -43,6 +46,7 @@ fun LocationPermissionHandler(
         backgroundGranted = granted || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
     }
 
+    // Startet die permissionslaucher
     LaunchedEffect(Unit) {
         if (!fineGranted) {
             finePermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)

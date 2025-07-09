@@ -22,6 +22,7 @@ class SignUpViewModel(private val authRepository: AuthRepository, private val fi
     var isLoading = mutableStateOf(false)
         private set
 
+    //Get States
     fun onNameChange(newName: String) {
         name.value = newName
     }
@@ -34,6 +35,7 @@ class SignUpViewModel(private val authRepository: AuthRepository, private val fi
         password.value = newPassword
     }
 
+    //SignUp Func vom AuthRepository
     fun signUp(onSuccess: () -> Unit) {
         viewModelScope.launch {
             isLoading.value = true

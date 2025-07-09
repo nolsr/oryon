@@ -34,6 +34,7 @@ class ActivityViewModel(
     private val _runSessions = MutableStateFlow<List<RunSession>>(emptyList())
     val runSessions: StateFlow<List<RunSession>> = _runSessions.asStateFlow()
 
+    // Überprüft ob eine RunSession in der aktuellen Woche war
     val runSessionsThisWeek: StateFlow<List<RunSession>> =
         runSessions.map { sessions ->
             sessions.filter { isThisWeek(it.date) }
@@ -43,6 +44,7 @@ class ActivityViewModel(
             initialValue = emptyList()
         )
 
+    // Berechnet die Gesamtdistanz für jede Woche (Notwendig für das Diagramm)
     val distanceByDay: StateFlow<Map<String, Float>> =
         runSessionsThisWeek
             .map { sessions ->
@@ -60,6 +62,9 @@ class ActivityViewModel(
                 initialValue = emptyMap()
             )
 
+    //Holt sich die User Id
+    //Bekommt alle dem User Zugehöhrigen RunSessions von FirestoreRepo
+    //Speichert die in _runSessions
     init {
         val currentUserId = authRepository.getUID()
         if (currentUserId != null) {
@@ -74,6 +79,7 @@ class ActivityViewModel(
         }
     }
 
+    // Überprüft ob ein Datum in der aktuellen Woche liegt
     private fun isThisWeek(timestamp: Timestamp): Boolean {
         val now = LocalDate.now()
         val startOfWeek = now.with(DayOfWeek.MONDAY)
