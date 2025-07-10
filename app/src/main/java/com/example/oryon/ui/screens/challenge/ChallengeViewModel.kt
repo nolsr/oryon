@@ -103,6 +103,7 @@ class ChallengeViewModel(
     // und speichert die Daten in ParticipantRanking aus dem Model
     fun getCurrentChallengeRanking(): List<ParticipantRanking> {
         val challenge = _selectedChallenge.value ?: return emptyList()
+        println("Current challenge: $challenge")
         return challenge.participants
             .sortedByDescending { it.progress }
             .map {

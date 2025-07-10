@@ -25,10 +25,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -54,11 +56,13 @@ import com.example.oryon.data.ChallengeData
 import com.example.oryon.data.ChallengeGoal
 import com.example.oryon.data.ChallengeParticipant
 import com.example.oryon.data.ParticipantRanking
+import com.example.oryon.data.extractNumericTarget
 import com.example.oryon.data.getChallengeTypeText
 import com.example.oryon.data.getUnitLabel
 import com.example.oryon.data.getUnitShort
 import com.example.oryon.ui.screens.challenge.ChallengeViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChallengeDetailScreen( challengeId: String, viewModel: ChallengeViewModel) {
     val challenges by viewModel.challenges.collectAsState()
@@ -81,7 +85,7 @@ fun ChallengeDetailScreen( challengeId: String, viewModel: ChallengeViewModel) {
     val tabTitles = listOf("Challenge", "Mitglieder")
 
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        TabRow(selectedTabIndex = selectedTabIndex) {
+        PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
             tabTitles.forEachIndexed { index, title ->
                 Tab(
                     selected = selectedTabIndex == index,
@@ -100,9 +104,9 @@ fun ChallengeDetailScreen( challengeId: String, viewModel: ChallengeViewModel) {
 
 @Composable
 fun ChallengeDetailTab(challenge: ChallengeData?, currentUser:ChallengeParticipant?, progress: Float?, ranking: List<ParticipantRanking>) {
-    val progressKm = currentUser?.progress ?: 0f
-    val targetKm = (challenge?.goal as? ChallengeGoal.Distance)?.targetKm ?: 0f
-    val unit = challenge?.goal?.getUnitLabel(progressKm)
+    val progressUser = currentUser?.progress ?: 0f
+    val targetChallenge = challenge?.goal?.let { extractNumericTarget(it) }
+    val unit = challenge?.goal?.getUnitLabel(progressUser)
     val shortUnit = challenge?.goal?.getUnitShort()
 
     LazyColumn {
@@ -153,8 +157,9 @@ fun ChallengeDetailTab(challenge: ChallengeData?, currentUser:ChallengeParticipa
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Deine Challenge-Statistik:")
                 Spacer(modifier = Modifier.height(12.dp))
-                if (progress != null && challenge != null && shortUnit != null && unit != null) {
-                    TextCard((progress * 100), progressKm.toInt(), targetKm.toInt(), shortUnit, unit)
+
+                if (progress != null && challenge != null && shortUnit != null && unit != null && targetChallenge != null) {
+                    TextCard((progress * 100), progressUser.toInt(), targetChallenge.toInt(), shortUnit, unit)
                 }
 
                 Spacer(modifier = Modifier.height(38.dp))
@@ -185,6 +190,7 @@ fun MemberTab(
                 .padding(16.dp)
         ) {
             itemsIndexed(ranking) { index, participant ->
+                println("Participants Member Raking $participant")
                 val unit = challenge?.goal?.getUnitLabel(participant.progress)
                 Row(
                     modifier = Modifier

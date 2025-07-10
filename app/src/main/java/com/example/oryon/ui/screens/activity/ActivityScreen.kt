@@ -279,7 +279,7 @@ fun RunCard(session: RunSession, onCardClick: () -> Unit) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onCardClick() },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -327,7 +327,7 @@ fun RunCard(session: RunSession, onCardClick: () -> Unit) {
                 imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = "Mehr anzeigen",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp).clickable { onCardClick() }
+                modifier = Modifier.size(24.dp)
             )
         }
     }

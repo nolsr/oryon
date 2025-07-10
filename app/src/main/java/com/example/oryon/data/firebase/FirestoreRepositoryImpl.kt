@@ -112,7 +112,7 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
             "data" to mapOf("target" to target),
             "participantIds" to listOf(creatorUid),
             "participants" to listOf(
-                mapOf("id" to creatorUid, "progress" to 0f)
+                mapOf("uid" to creatorUid, "progress" to 0f)
             )
         )
         challengeCollection
@@ -154,18 +154,21 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
                         val participantIds = doc.get("participantIds") as? List<String> ?: emptyList()
                         val userArray = doc.get("participants") as? List<Map<String, Any>> ?: emptyList()
 
+                        println("ParticipantsArray: $userArray")
+
                         val participants = coroutineScope {
-                            participantIds.map { uid ->
+                            userArray.map { participantMap  ->
                                 async {
-                                    //Sucht die UserDaten anhand der UID in Firestore
-                                    val userData = userArray.find { it["id"] == uid }
-                                    val progress = (userData?.get("progress") as? Number)?.toFloat() ?: 0f
+                                    //Sucht die Progressdaten und UID danach den Namen aus Firestore
+                                    val uid = participantMap["uid"] as? String ?: ""
+                                    val progress = (participantMap["progress"] as? Number)?.toFloat() ?: 0f
 
                                     val name = try {
                                         usersCollection.document(uid).get().await().getString("name")
                                     } catch (e: Exception) {
                                         null
                                     }
+                                    println("Participant: uid=$uid, progress=$progress, name=$name")
 
                                     ChallengeParticipant(
                                         uid = uid,
@@ -176,7 +179,6 @@ class FirestoreRepositoryImpl(private val authRepository: AuthRepository) : Fire
                             }.awaitAll()
                         }
 
-                        println("Participants: $participants")
 
                         ChallengeData(
                             id = id,

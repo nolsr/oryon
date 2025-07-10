@@ -31,6 +31,7 @@ sealed class ChallengeGoal {
     data class Days(val targetDays: Int) : ChallengeGoal()
 }
 
+//Hilfsfunc fürs parsen von Goal für Challengetyp
 fun ChallengeGoal.getUnitLabel(progress: Float): String = when (this) {
     is ChallengeGoal.Distance -> "km"
     is ChallengeGoal.Duration -> if (progress == 1f) "Min" else "Min"
@@ -45,6 +46,13 @@ fun ChallengeGoal.getUnitShort(): String = when (this) {
     is ChallengeGoal.RunCount -> "x"
     is ChallengeGoal.Days -> "T"
     else -> ""
+}
+
+fun extractNumericTarget(goal: ChallengeGoal): Float = when (goal) {
+    is ChallengeGoal.Distance -> goal.targetKm
+    is ChallengeGoal.Duration -> goal.targetMinutes.toFloat()
+    is ChallengeGoal.RunCount -> goal.targetRuns.toFloat()
+    is ChallengeGoal.Days -> goal.targetDays.toFloat()
 }
 
 

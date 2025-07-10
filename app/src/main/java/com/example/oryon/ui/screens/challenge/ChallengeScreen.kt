@@ -132,6 +132,9 @@ fun AddChallengeDialog(
     var expanded by remember { mutableStateOf(false) } // State for dropdown menu
     val options = listOf("distance", "duration", "runcount", "days")
 
+    var nameError by remember { mutableStateOf(false) }
+    var targetError by remember { mutableStateOf(false) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Neue Challenge hinzufügen") },
@@ -139,8 +142,15 @@ fun AddChallengeDialog(
             Column {
                 OutlinedTextField(
                     value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Gruppen Name") }
+                    onValueChange = {
+                        name = it
+                        nameError = it.isBlank()
+                    },
+                    isError = nameError,
+                    label = { Text("Gruppen Name") },
+                    supportingText = {
+                        if (nameError) Text("Name darf nicht leer sein", color = MaterialTheme.colorScheme.error)
+                    }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -174,17 +184,29 @@ fun AddChallengeDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = target,
-                    onValueChange = { target = it.filter { c -> c.isDigit() || c == '.' } },
+                    onValueChange = {
+                        target = it.filter { c -> c.isDigit() || c == '.' }
+                        targetError = target.isBlank() || target.toFloatOrNull() == null || target.toFloat() == 0f
+                    },
                     label = { Text("Challenge Ziel") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = targetError,
+                    supportingText = {
+                        if (targetError) Text("Bitte gib ein gültiges Ziel > 0 an", color = MaterialTheme.colorScheme.error)
+                    }
                 )
             }
         },
         confirmButton = {
             Button(onClick = {
-                val targetFloat = target.toFloatOrNull() ?: 0f
-                onAdd(name, type, targetFloat)
-                onDismiss()
+                nameError = name.isBlank()
+                targetError = target.isBlank() || target.toFloatOrNull() == null || target.toFloat() == 0f
+
+                if (!nameError && !targetError) {
+                    val targetFloat = target.toFloatOrNull() ?: 0f
+                    onAdd(name, type, targetFloat)
+                    onDismiss()
+                }
             }) {
                 Text("Hinzufügen")
             }
