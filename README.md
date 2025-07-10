@@ -1,4 +1,4 @@
-# Willkommen bei Oryon! 🏃💨
+# Willkommen bei Oryon! 🏃
 ![Oryon Lauf-App Hero Image](https://github.com/user-attachments/assets/2b6efdcd-cffe-4926-9bf3-c77d8cf85c33)
 
 Oryon ist eine moderne Android-App, entwickelt Kotlin und Jetpack Compose.
