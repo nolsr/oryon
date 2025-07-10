@@ -13,4 +13,4 @@ Oryon ist eine moderne Android-App, entwickelt Kotlin und Jetpack Compose.
 
 Für eine detaillierte Projektbeschreibung, Architekturübersicht und weitere technische Details, schau dir bitte unsere **Projektdokumentation** an:
 
-➡️ **[Lies die Oryon Projektdokumentation (PDF)](Oryon_Projekt_Dokumentation.pdf)**
+➡️ **[Lies die Oryon Projektdokumentation (PDF)](https://github.com/nolsr/oryon/blob/master/Oryon%20Architektur%20(2).pdf)**
