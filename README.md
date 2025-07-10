@@ -6,8 +6,8 @@ Oryon ist eine moderne Android-App, entwickelt Kotlin und Jetpack Compose.
 ## Es bietet:
 
 *   📍 **Präzises Lauf-Tracking** mit Kartenvisualisierung via Mapbox.
-*   📊 **Detaillierte Statistiken** zu deinen Aktivitäten.
-*   🏆 **Spannende Challenges**, um dich selbst und andere herauszufordern.
+*   📊 **Detaillierte Statistiken**.
+*   🏆 **Spannende Challenges**.
 *   🔒 **Sichere Authentifizierung** und Datenspeicherung mit Firebase.
 *   ✨ Eine **moderne und intuitive Benutzeroberfläche** dank Jetpack Compose.
 
